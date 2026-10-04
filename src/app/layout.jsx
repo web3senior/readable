@@ -3,7 +3,6 @@ import Providers from '@/components/Providers'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { site } from '@/config/site'
-import { miniAppEmbeds } from '@/lib/miniapp'
 import './Globals.scss'
 
 const inter = Inter({ variable: '--font-inter', subsets: ['latin'], display: 'swap' })
@@ -17,8 +16,6 @@ export const metadata = {
   alternates: { canonical: '/' },
   openGraph: { title: site.name, description: site.description, siteName: site.name, type: 'website' },
   twitter: { card: 'summary_large_image' },
-  // A link to the site opens it as a mini app in Farcaster and the Base app
-  other: miniAppEmbeds('/'),
 }
 
 export const viewport = {

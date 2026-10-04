@@ -226,21 +226,9 @@ export const site = {
     version: '0.1.0',
   },
 
-  // The site as a mini app inside Farcaster, the Base app and Hup. The host's wallet is the one
-  // used, and its feed shows a card for every link. Farcaster allows no emoji or special
-  // characters in these, the subtitle up to 30 characters and the description up to 170
+  // The site as a mini app inside Hup, which runs it in a post and lends it the viewer's wallet
+  // through its own SDK
   miniApp: {
-    name: 'Readable',
-    subtitle: 'Onchain numbers',
-    description: 'Find and register an onchain number for your wallet or AI agent, pay anyone by number, and dial agents.',
-    button: 'Find your number',
-    category: 'utility',
-    tags: ['names', 'numbers', 'identity', 'payments', 'agents'],
-    // Drawn by /api/miniapp/<kind>: the card in a feed (3:2), the icon and the splash
-    imagePath: '/api/miniapp/embed',
-    iconPath: '/api/miniapp/icon',
-    splashPath: '/api/miniapp/splash',
-    // Hup runs a mini app in a post and talks to it through its own SDK
     hup: { sdk: 'https://hup.social/miniapp-sdk.js', origins: ['https://hup.social', 'https://www.hup.social'] },
   },
 
@@ -400,7 +388,7 @@ export const site = {
         about: 'New chat takes {number} where it takes an address. The contact keeps the number and the wallet it reached, and warns if they part.',
       },
       { name: 'Hup', about: 'A profile shows the number its wallet chose as its primary name.' },
-      { name: 'Mini apps', about: 'The site runs inside Farcaster, the Base app and Hup with the wallet the app already has.' },
+      { name: 'Mini apps', about: 'The site runs inside Hup with the wallet the app already has.' },
       {
         name: 'ENS',
         stage: 'next',

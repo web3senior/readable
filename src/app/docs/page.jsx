@@ -299,8 +299,7 @@ export default function DocsPage() {
           <Section id="share">
             <p className={styles.doc__text}>
               Every name has a page of its own, <code>{site.names.path}/{example.number.replaceAll(' ', '-')}</code>, with its contact card,
-              a Pay button and a code to scan. A link to it shows the name in its preview wherever it is pasted, and opens as a mini app
-              in Farcaster and the Base app.
+              a Pay button and a code to scan. A link to it shows the name in its preview wherever it is pasted.
             </p>
             <p className={styles.doc__text}>A badge puts the name on any site or README, linked to its page:</p>
             <CodeBlock language="Markdown" code={`[![${example.number} on ${site.name}](${site.baseUrl}${site.badge.path}/${example.number.replaceAll(' ', '-')})](${site.baseUrl}${site.names.path}/${example.number.replaceAll(' ', '-')})`} />

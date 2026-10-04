@@ -79,9 +79,6 @@ check(badge.ok && (await badge.text()).includes('+0 5555'), 'the badge draws the
 const card = await fetch(`${APP}/names/+0-5555/opengraph-image`)
 check(card.ok && card.headers.get('content-type') === 'image/png', 'the name page has a preview picture')
 
-const manifest = await api('/.well-known/farcaster.json')
-check(manifest.body?.miniapp?.requiredChains?.[0] === `eip155:${CHAIN_ID}`, 'the mini app manifest names the chain')
-
 // --- The MCP server ---
 
 const mcp = (method, params) =>

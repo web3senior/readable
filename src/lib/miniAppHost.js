@@ -4,8 +4,7 @@ import { site } from '@/config/site'
 
 /**
  * The app the site is running inside, when it runs as a mini app: Hup, which embeds it in a post
- * and lends it the viewer's Hup wallet, or a Farcaster client such as the Base app. Each answers
- * with the wallet the site should use. Null on its own page, where nothing changes.
+ * and lends it the viewer's Hup wallet. Null on its own page, where nothing changes.
  */
 
 const { hup } = site.miniApp
@@ -38,18 +37,9 @@ async function hupHost() {
   return { id: 'hup', name: 'Hup', provider: await window.hup.getProvider() }
 }
 
-// Farcaster clients and the Base app, through Farcaster's SDK, loaded only when framed
-async function farcasterHost() {
-  const { sdk } = await import('@farcaster/miniapp-sdk')
-  if (!(await sdk.isInMiniApp())) return null
-  // Takes the client's splash screen down; the page is ready to be used
-  await sdk.actions.ready()
-  return { id: 'farcaster', name: 'Farcaster', provider: await sdk.wallet.getEthereumProvider() }
-}
-
 /** The host and its wallet provider, or null when the site isn't framed by one. */
 export async function findMiniAppHost() {
   const framed = window.parent !== window || Boolean(window.ReactNativeWebView)
   if (!framed) return null
-  return (await hupHost().catch(() => null)) ?? (await farcasterHost().catch(() => null))
+  return hupHost().catch(() => null)
 }

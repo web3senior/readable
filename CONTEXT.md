@@ -49,7 +49,7 @@ Roadmap order, decided by the user:
   request). The share card keeps the plain `site.subtitle`. The
   user's word was "it will be on Robinhood", in reply to a Base badge: the registry is to live
   on Robinhood Chain. **Nothing else has moved yet**: `config/chains.js`, the deployments, the
-  docs and the copy that names Base (its wallet, OpenSea, the onramp, the mini apps, the ETH/USD
+  docs and the copy that names Base (its wallet, OpenSea, the onramp, the ETH/USD
   feed, the Hup forwarders) still follow the Base decision below. The claim is only about a
   holder's changes to a name: buying still costs gas.
 - **The site says plainly how few apps read names yet (2026-10-04, the user's request).** The
@@ -350,7 +350,7 @@ Roadmap order, decided by the user:
   close to Claude's brand color) and the cyan `#22d3ee`. Green, red and amber already mean
   success, danger and warning, so the accent stays out of them. It is `--color-accent` in
   light and dark alike, and the background of the NFT picture (`nft.art` in `config/site.js`),
-  the badge, the mini app splash, the app icon, the Snap icon, the sample SVG and the deploy
+  the badge, the app icon, the Snap icon, the sample SVG and the deploy
   page. Ink on it is dark (`#0f1419`, 7.2:1), never white (2.6:1), unlike Telegram's own
   buttons. On white the blue is 2.6:1, so in light mode it is a fill only: a border, the
   focus ring, a spinner or an icon reads `--color-accent-line` (`#1088c6`, 3.5:1 on the soft
@@ -785,11 +785,12 @@ as deployed.
   nothing until a resolver contract on Ethereum points at it, which is a contract and waits for
   the user's approval of a plan. This is the opposite direction of the removed ENS lookup: it
   publishes Readable names into ENS, it reads no ENS name.
-- **Mini app**: `/.well-known/farcaster.json` (a rewrite to `/api/miniapp/manifest`), `fc:miniapp`
-  and `fc:frame` tags on every page and on each name's page, pictures from `/api/miniapp/<kind>`.
-  `MiniAppBridge` connects the host's wallet: Hup through its own SDK script when framed by
-  hup.social, Farcaster and the Base app through `@farcaster/miniapp-sdk` (loaded only when
-  framed). The account association is the user's to sign (`FARCASTER_*`).
+- **Mini app**: `MiniAppBridge` connects Hup's wallet through Hup's own SDK script when the site
+  is framed by hup.social (`lib/miniAppHost.js`). **Nothing of Farcaster (2026-10-04, the user's
+  request: "remove everything about Farcaster, even from envs")**: its manifest, the
+  `fc:miniapp` and `fc:frame` tags, the card pictures of `/api/miniapp/<kind>`,
+  `@farcaster/miniapp-sdk` and `FARCASTER_*` are gone, and with them the Base app, which ran the
+  site as a Farcaster mini app. Do not bring them back without the user asking.
 - **Easier buying**: `OnrampLink` (Coinbase's onramp, `/api/onramp`, a session token made with
   `CDP_API_KEY_*`; Base only, hidden without keys), selling ETH since 2026-10-03. A paymaster
   (ERC-7677, when `PAYMASTER_URL` is set): `/api/paymaster` opens the userOp (Coinbase Smart
@@ -923,7 +924,7 @@ as deployed.
   its signer the address of `ENS_GATEWAY_PRIVATE_KEY`), deploy it on Ethereum and set it as the
   resolver of `readable.eth` (or of `readable.name` imported into ENS), then set
   `ENS_RESOLVER_ADDRESS`. Publish `readable-sdk` 0.2.0 and `readable-snap`, and ask MetaMask to
-  list the Snap. Sign the Farcaster account association; list the mini app on Hup. Set
+  list the Snap. List the mini app on Hup. Set
   `CDP_API_KEY_*` and `PAYMASTER_URL` (with the paymaster's own allowlist: the registry). Deploy
   Tunnel and Hup with `NEXT_PUBLIC_READABLE_API`.
 - An idea from the same answer that needs the contract, so it belongs before mainnet: a fair
