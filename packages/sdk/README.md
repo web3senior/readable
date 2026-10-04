@@ -70,6 +70,11 @@ await readable.getAddress('+0 4242', trx)
 
 A coin type with no coder comes back as the bytes the registry stores.
 
+A name can point to its **agent wallet**, a wallet of its own (ERC-6551) that exists on the
+registry's chain alone. Then `resolve` and the registry's chain answer it, `getProfile` says
+`agentWallet: true`, and `'eth'` and every other EVM chain answer `null`: there nobody controls
+that address.
+
 ## Resolve when you send
 
 A name can change hands or run out. Read it at the moment money moves, not once at sign-up.

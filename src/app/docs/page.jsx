@@ -24,12 +24,16 @@ import { ens } from '@/config/ens'
 import { records } from '@/config/records'
 import { registry } from '@/config/registry'
 import { site } from '@/config/site'
+import { tokenBound, tokenBoundOn } from '@/config/tokenBound'
 import { launchNumbers as numbers, stage } from '@/lib/docs'
 import { formatCount, formatYears } from '@/lib/format'
 import { formatNumber } from '@/lib/query/numbers'
 import styles from './page.module.scss'
 
 const { docs } = site
+const { agentWallet } = site.profile
+// Whether the home chain has ERC-6551's registry and Tokenbound's account, so names have wallets
+const agentWallets = tokenBoundOn(home.id)
 const LOCALE = 'en'
 // Shown where an address will be, until there is one
 const NO_ADDRESS = '0x…'
@@ -277,6 +281,9 @@ export default function DocsPage() {
                 ['Make primary', 'The one name apps show in place of your address. A wallet has one primary name at a time.'],
                 ['Records', 'What the name says about you or your agent, saved together in one change.'],
                 ['Editor', 'Another wallet, such as the agent the name stands for, that can point it, fill in its records and set its other chains. It can’t move the name, and it goes when the name changes hands.'],
+                ...(agentWallets
+                  ? [[agentWallet.title, <span key="w">A wallet of the name’s own, controlled by whoever holds it. Point the name at it to have payments land there. Whatever it holds goes with the name: <a href="#agents">For AI agents</a>.</span>]]
+                  : []),
                 ['Renew', 'Adds years to the term.'],
                 ['Remind me to renew', 'A calendar file with a reminder a month and a week before the name expires. The site keeps no address and sends nothing.'],
               ]}
@@ -325,7 +332,12 @@ export default function DocsPage() {
                   </span>,
                   'The grace period. The name reaches nobody and can’t be changed or transferred, but it is still held: it can be renewed, and nobody else can register it.',
                 ],
-                ['After that', 'Anyone can register it. It starts clean, pointing at its new holder, with no records.'],
+                [
+                  'After that',
+                  agentWallets
+                    ? `Anyone can register it. It starts clean, pointing at its new holder, with no records. Its ${agentWallet.title.toLowerCase()} doesn’t: whatever is still in it passes to the new holder.`
+                    : 'Anyone can register it. It starts clean, pointing at its new holder, with no records.',
+                ],
               ]}
             />
             <p className={styles.doc__callout}>
@@ -352,6 +364,12 @@ export default function DocsPage() {
               <li>
                 <strong>It stops being the sender’s primary name.</strong> The new holder makes it theirs if they want it to be.
               </li>
+              {agentWallets && (
+                <li>
+                  <strong>Its {agentWallet.title.toLowerCase()} goes with it, full.</strong> The name’s own wallet belongs to whoever
+                  holds the name, with everything in it. Move out what you keep before you send or sell the name.
+                </li>
+              )}
               <li>
                 <strong>The term stays.</strong> The new holder gets the years that were left. A name whose term has ended can’t be
                 transferred.
@@ -476,6 +494,48 @@ export default function DocsPage() {
               address up to date and can never sell the name. Keep a rating or a reputation by the token id and{' '}
               <code>generationOf(tokenId)</code>, so it never passes to whoever holds the name next.
             </p>
+            {agentWallets && (
+              <>
+                <p className={styles.doc__text}>
+                  <strong>A wallet of its own.</strong> Every name has an{' '}
+                  <a href="https://eips.ethereum.org/EIPS/eip-6551" target="_blank" rel="noopener noreferrer">
+                    ERC-6551
+                  </a>{' '}
+                  account, its {agentWallet.title.toLowerCase()}: a wallet controlled by whoever holds the name, at an address that
+                  never changes. It receives before it is created, and the holder creates it the first time something moves out of
+                  it. Keep an agent’s earnings and tools there and they change hands with its name, as a business’s accounts go with
+                  the business. The holder can point the name at it from the name’s page; until then payments go to the wallet the
+                  name points to, as always.
+                </p>
+                <p className={styles.doc__callout}>
+                  <strong>It is never reset.</strong> Records, the editor and where a name points start over with each holder; this
+                  wallet doesn’t. Whatever is in it passes to whoever holds the name next, by sale, by transfer, or by registering the
+                  name after it expires. Until then the last holder still controls it, even after the term ends.
+                </p>
+                <p className={styles.doc__callout}>
+                  <strong>It exists on {home.name} only.</strong> On any other chain nobody controls its address. While a name points
+                  at it, the SDK, the API, the MCP server and the ENS gateway give no wallet for any other chain, and a profile says{' '}
+                  <code>agentWallet: true</code>. The registry’s own <code>addr</code> still answers every EVM chain with where a name
+                  points, so an app that reads the registry directly should compare that with the address below before it sends
+                  anywhere else.
+                </p>
+                <Spec
+                  caption="Its address, from the ERC-6551 registry’s account()"
+                  rows={[
+                    ['Registry', <Address key="r" value={tokenBound.registry} />],
+                    ['Implementation', <Address key="i" value={tokenBound.implementation} />],
+                    ['Salt', <code key="s">0</code>],
+                    ['Chain id', <code key="c">{home.id}</code>],
+                    ['Token contract', registry.address ? <Address key="t" value={registry.address} /> : 'The registry'],
+                    ['Token id', <span key="d">The name’s, from <code>tokenIdOf</code></span>],
+                  ]}
+                />
+                <p className={styles.doc__text}>
+                  The implementation is Tokenbound’s account proxy, which runs its AccountV3, with the salt Tokenbound’s own tools
+                  use, so apps that show token-bound accounts find the same wallet.
+                </p>
+              </>
+            )}
           </Section>
 
           <Section id={site.integrations.section}>

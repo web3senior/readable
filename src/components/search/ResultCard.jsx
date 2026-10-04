@@ -45,9 +45,11 @@ const REASON_STATUSES = new Set(['invalid', 'reserved', 'paused'])
 const sameAddress = (a, b) => Boolean(a && b) && isAddressEqual(a, b)
 
 const statusOf = (candidate, lookup) => {
-  if (!candidate.valid) return 'invalid'
+  if (!candidate.checkable) return 'invalid'
   if (lookup.isPending) return 'loading'
-  if (lookup.isError) return 'error'
+  if (lookup.isError) return candidate.valid ? 'error' : 'invalid'
+  // Refused by today's length or check digit: held from before the rules changed, or not valid
+  if (!candidate.valid) return lookup.data.status === 'taken' ? 'taken' : 'invalid'
   return lookup.data.status
 }
 
@@ -219,7 +221,8 @@ export default function ResultCard({ candidate, onAbout, onPick }) {
   const payable = status === 'available' || isYours
   // Someone else's live name that points somewhere can be paid, in ETH
   const sendable = status === 'taken' && !isYours && !data.expired && data.target !== zeroAddress
-  const page = candidate.valid ? namePath(namespace, candidate.label) : null
+  const named = candidate.valid || status === 'taken'
+  const page = named ? namePath(namespace, candidate.label) : null
 
   // Paying needs a wallet: without one the same button opens the picker instead
   const openPayment = () => (isConnected ? paymentRef.current?.open() : openWalletDialog())
@@ -236,7 +239,7 @@ export default function ResultCard({ candidate, onAbout, onPick }) {
           <h2 className={styles.card__name} dir="auto">
             {candidate.name}
           </h2>
-          {candidate.valid && <CopyButton value={candidate.name} title="Copy name" />}
+          {named && <CopyButton value={candidate.name} title="Copy name" />}
         </div>
         <p className={styles.card__meta}>
           {namespace.title} · {chainNameFor(namespace.chainId)}

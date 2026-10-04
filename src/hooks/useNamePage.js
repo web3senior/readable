@@ -11,7 +11,7 @@ import { readNamePage } from '@/lib/registry'
  */
 export default function useNamePage(candidate) {
   const queryClient = useQueryClient()
-  const enabled = registryEnabled && Boolean(candidate?.valid && candidate.namespace.onchainId)
+  const enabled = registryEnabled && Boolean(candidate?.checkable && candidate.namespace.onchainId)
   const query = useQuery({
     queryKey: ['names', 'page', registry.address, candidate?.namespace.id, candidate?.label],
     queryFn: () => readNamePage(candidate.namespace.onchainId, candidate.label),

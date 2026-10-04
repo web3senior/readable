@@ -9,7 +9,8 @@ export default function useNameLookup(candidate) {
   return useQuery({
     queryKey: ['lookup', candidate.namespace.id, candidate.label],
     queryFn: () => lookupCandidate(candidate),
-    enabled: candidate.valid,
+    // A label refused by today's rules is asked about too: it may be held from before
+    enabled: Boolean(candidate.checkable),
     staleTime: STALE_MS,
   })
 }

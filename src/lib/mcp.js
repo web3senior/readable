@@ -7,7 +7,7 @@ import { readable } from '@/lib/api'
 import { formatAmount } from '@/lib/format'
 import { displayName, namePath, toNamespace } from '@/lib/namespaces'
 import { lookupCandidate } from '@/lib/providers'
-import { parseQuery } from '@/lib/query/parse'
+import { findName } from '@/lib/query/parse'
 import { readRegistry } from '@/lib/registry'
 import { searchLink } from '@/lib/searchLink'
 
@@ -21,6 +21,12 @@ import { searchLink } from '@/lib/searchLink'
 const PROTOCOL_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05']
 
 const link = (path) => `${site.baseUrl}${path}`
+
+// Said beside an answer whose address is the name's agent wallet (ERC-6551), which exists on the
+// registry's chain alone: anywhere else nobody controls that address
+const agentWalletNote = () => ({
+  note: `address is the name’s agent wallet, which exists on ${chainNameFor(registry.chainId)} only. Send to it there, never on another chain.`,
+})
 const nameInput = { type: 'object', properties: { name: { type: 'string', description: 'A number like +0 42421230 (spaces and dashes optional) or a name like alice.arc' } }, required: ['name'] }
 
 class ToolError extends Error {}
@@ -34,7 +40,7 @@ const requireName = ({ name } = {}) => {
 async function candidateOf(name) {
   const { namespaces, currency } = await readRegistry()
   const live = namespaces.map((source) => toNamespace(source, { chainId: registry.chainId, currency }))
-  const candidate = parseQuery(name, live).candidates.find((found) => found.valid)
+  const candidate = findName(name, live)
   if (!candidate) throw new ToolError(`${name} isn’t a name the registry can hold`)
   return { candidate, currency }
 }
@@ -50,7 +56,12 @@ const TOOLS = [
       const name = requireName(args)
       const profile = await readable().getProfile(name)
       if (!profile) return { name, found: false, note: 'Not registered, expired, or not a valid name. Nothing should be sent to it.' }
-      return { found: true, ...profile, page: link(`${site.names.path}/${profile.name.replaceAll(' ', '-')}`) }
+      return {
+        found: true,
+        ...profile,
+        ...(profile.agentWallet && agentWalletNote()),
+        page: link(`${site.names.path}/${profile.name.replaceAll(' ', '-')}`),
+      }
     },
   },
   {
@@ -89,7 +100,8 @@ const TOOLS = [
     run: async (args) => {
       const name = requireName(args)
       const agent = await readable().getAgent(name)
-      return agent ? { found: true, ...agent } : { name, found: false, note: 'This name reaches no AI agent.' }
+      if (!agent) return { name, found: false, note: 'This name reaches no AI agent.' }
+      return { found: true, ...agent, ...(agent.agentWallet && agentWalletNote()) }
     },
   },
   {

@@ -4,9 +4,10 @@ import { ens } from '@/config/ens'
 import { records } from '@/config/records'
 import { registry } from '@/config/registry'
 import { toNamespace } from '@/lib/namespaces'
-import { parseQuery } from '@/lib/query/parse'
+import { findName } from '@/lib/query/parse'
 import { parseRecords, readField } from '@/lib/records'
 import { publicClient, readRegistry } from '@/lib/registry'
+import { tokenBoundAccountOf } from '@/lib/tokenBound'
 
 /**
  * The CCIP-Read gateway behind ENS (EIP-3668, ENSIP-10). A resolver contract on Ethereum, ENS's
@@ -42,7 +43,7 @@ const queryAbi = parseAbi([
 
 const ETH_COIN_TYPE = 60n
 // ENSIP-11: an EVM chain's coin type is 0x80000000 | its chain id, and the gateway answers any of
-// them with the wallet the name points to
+// them with the wallet the name points to, but the name's agent wallet on the registry's chain alone
 const EVM_FLAG = 0x80000000n
 
 const read = (functionName, args) => publicClient().readContract({ address: registry.address, abi: registry.abi, functionName, args })
@@ -73,7 +74,7 @@ async function locate(nameText) {
   if (!nameText) return null
   const { namespaces } = await readRegistry()
   const live = namespaces.map((source) => toNamespace(source, { chainId: registry.chainId }))
-  const candidate = parseQuery(nameText, live).candidates.find((found) => found.valid)
+  const candidate = findName(nameText, live)
   if (!candidate) return null
   const tokenId = await read('tokenIdOf', [candidate.namespace.onchainId, candidate.label])
   const record = await read('recordOf', [tokenId])
@@ -83,9 +84,17 @@ async function locate(nameText) {
 
 const encode = (type, value) => encodeAbiParameters([{ type }], [value])
 
-async function target(found) {
+// The coin type of the registry's own chain, the one chain a name's agent wallet exists on
+const HOME_COIN_TYPE = EVM_FLAG | BigInt(registry.chainId)
+
+// The wallet a name points to, on the EVM chain of `coinType`. Its agent wallet (ERC-6551) is
+// answered on the registry's chain alone: anywhere else nobody controls that address
+async function target(found, coinType) {
   if (!found) return zeroAddress
-  return read('resolve', [found.tokenId])
+  const wallet = await read('resolve', [found.tokenId])
+  const agentWallet = tokenBoundAccountOf(found.tokenId)
+  if (coinType !== HOME_COIN_TYPE && agentWallet && isAddressEqual(wallet, agentWallet)) return zeroAddress
+  return wallet
 }
 
 // One resolver question, answered as the resolver function would answer it
@@ -98,11 +107,11 @@ async function answerQuery(found, data) {
     case MULTICALL:
       return encode('bytes[]', await Promise.all(args[0].map((call) => answerQuery(found, call))))
     case ADDR:
-      return encode('address', await target(found))
+      return encode('address', await target(found, ETH_COIN_TYPE))
     case ADDR_COIN: {
       const coinType = args[1]
       if (coinType === ETH_COIN_TYPE || (coinType & EVM_FLAG) !== 0n) {
-        const wallet = await target(found)
+        const wallet = await target(found, coinType)
         return encode('bytes', isAddressEqual(wallet, zeroAddress) ? '0x' : wallet)
       }
       return encode('bytes', found ? await read('addr', [found.tokenId, coinType]) : '0x')

@@ -12,6 +12,7 @@ import CopyButton from '@/components/ui/CopyButton'
 import EmptyState from '@/components/ui/EmptyState'
 import Shimmer from '@/components/ui/Shimmer'
 import ActionPanel from '@/components/names/ActionPanel'
+import AgentWallet from '@/components/names/AgentWallet'
 import ContactCard from '@/components/names/ContactCard'
 import PayDialog from '@/components/names/PayDialog'
 import RecordsForm from '@/components/names/RecordsForm'
@@ -31,8 +32,9 @@ import useNamespaces from '@/hooks/useNamespaces'
 import { sendAdmin, trackAdmin } from '@/lib/adminActions'
 import { formatDate, formatRelative, truncateAddress } from '@/lib/format'
 import { displayName, namePath, toNamespace } from '@/lib/namespaces'
-import { parseQuery } from '@/lib/query/parse'
+import { findName } from '@/lib/query/parse'
 import { searchPath } from '@/lib/searchLink'
+import { tokenBoundAccountOf } from '@/lib/tokenBound'
 import styles from './NamePage.module.scss'
 
 const { path: NFT_PATH, art: NFT_ART } = site.nft
@@ -79,7 +81,7 @@ export default function NamePage({ slug }) {
 
   const typed = readSlug(slug)
   const { namespaces, isLoading: namespacesLoading, isError: namespacesError } = useNamespaces()
-  const candidate = useMemo(() => parseQuery(typed, namespaces).candidates.find((found) => found.valid) ?? null, [typed, namespaces])
+  const candidate = useMemo(() => findName(typed, namespaces), [typed, namespaces])
   const { data, isPending, isError, refetch, refresh } = useNamePage(candidate)
 
   const name = useMemo(() => {
@@ -144,6 +146,9 @@ export default function NamePage({ slug }) {
     const edited = !isAddressEqual(name.editor, zeroAddress)
     const editor = Boolean(account) && !holder && edited && isAddressEqual(name.editor, account)
     const pointsHome = isAddressEqual(name.target, name.owner)
+    // The name's own wallet (ERC-6551), where the chain has one
+    const agentWallet = tokenBoundAccountOf(name.tokenId)
+    const pointsToAgentWallet = Boolean(agentWallet) && isAddressEqual(name.target, agentWallet)
     const reachable = !expired && !isAddressEqual(name.target, zeroAddress)
     const path = namePath(name.namespace, name.label)
     const offer = marketplaceFor(registry.chainId, registry.address, name.tokenId)
@@ -157,6 +162,18 @@ export default function NamePage({ slug }) {
       trackAdmin(sent, { pending, done }).then((success) => success && refresh())
     }
     const args = { name, account, perform }
+    const agentWalletPanel = (live) =>
+      agentWallet && (
+        <AgentWallet
+          name={name}
+          wallet={agentWallet}
+          account={account}
+          currency={data.currency}
+          expired={!live}
+          perform={perform}
+          onChange={refresh}
+        />
+      )
 
     let sections
     if (holder && !expired) {
@@ -169,6 +186,7 @@ export default function NamePage({ slug }) {
           <RecordsForm key={`records:${name.stored}`} name={name} account={account} perform={perform} />
           <ActionPanel key={`chains:${Object.values(name.addresses).join()}`} spec={addressesSpec(args)} heading="Other chains" />
           <ActionPanel key={`editor:${name.editor}`} spec={editorSpec(args)} heading={profile.editor.term} />
+          {agentWalletPanel(true)}
           {share}
         </>
       )
@@ -184,10 +202,14 @@ export default function NamePage({ slug }) {
         </>
       )
     } else if (holder) {
+      // Its own wallet is still the holder's until someone registers the name again
       sections = (
-        <EmptyState className={styles.detail__notice} align="center" icon={WalletIcon}>
-          Renew it to keep it. Until then it points nowhere and can’t be changed.
-        </EmptyState>
+        <>
+          <EmptyState className={styles.detail__notice} align="center" icon={WalletIcon}>
+            Renew it to keep it. Until then it points nowhere and can’t be changed.
+          </EmptyState>
+          {agentWalletPanel(false)}
+        </>
       )
     } else if (expired) {
       sections = (
@@ -252,7 +274,9 @@ export default function NamePage({ slug }) {
               <dd className={styles.detail__value}>
                 <span className={styles.detail__identity}>
                   <AddressAvatar address={name.target} size="sm" />
-                  <span title={name.target}>{pointsHome ? 'Its holder' : truncateAddress(name.target)}</span>
+                  <span title={name.target}>
+                    {pointsHome ? 'Its holder' : pointsToAgentWallet ? profile.agentWallet.target : truncateAddress(name.target)}
+                  </span>
                   <CopyButton value={name.target} title="Copy address" size={13} />
                 </span>
               </dd>

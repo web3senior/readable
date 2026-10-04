@@ -7,12 +7,12 @@ import { normalizeText } from '@/lib/query/text'
 const candidateFor = (namespace, raw) => {
   const result = validateLabel(raw, namespace)
   return {
-    key: `${namespace.id}:${result.valid ? result.label : raw}`,
+    key: `${namespace.id}:${result.label ?? raw}`,
     namespace,
     raw,
     ...result,
     // An invalid label still needs a title on its card
-    name: result.valid ? result.name : `${raw}${namespace.suffix ?? ''}`,
+    name: result.name ?? `${raw}${namespace.suffix ?? ''}`,
   }
 }
 
@@ -71,4 +71,15 @@ export function parseQuery(raw, namespaces, { keypad = false } = {}) {
   // The number leads when no extension takes the word as it is
   const ordered = names.some((candidate) => candidate.valid) ? [...names, ...dialed] : [...dialed, ...names]
   return { input, candidates: ordered, unknownSuffix: null }
+}
+
+/**
+ * The one name a typed or linked name stands for, as the registry may hold it: the first
+ * candidate it can be asked about, valid or refused only by today's length or check digit, which
+ * may have been registered before they changed. Digits are a number first, as in the search, even
+ * where today's rules refuse the number and an extension would take them. Null when the registry
+ * can't hold it at all. Whether it is held is the registry's answer.
+ */
+export function findName(raw, namespaces) {
+  return parseQuery(raw, namespaces).candidates.find((candidate) => candidate.checkable) ?? null
 }

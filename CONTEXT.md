@@ -90,6 +90,17 @@ Roadmap order, decided by the user:
   number onchain too. Only the display changed: the search, the SDK and `/admin` still take
   spaces and dashes, a page's path is `/names/+0-42421230`, and an old `/names/+0-4242-1230`
   link still opens. `formatNumber` and the SDK's `formatName` write it; `groupSize` is gone.
+- **A name stays reachable when what is sold changes (2026-10-04, a fix the user asked for).**
+  On Base Sepolia the owner set Numbers to 4 to 6 digits with a check digit from 6 after
+  `+0 123456` and `+0 1234567` were registered. The app checked a name against today's length
+  and check digit before asking the registry, so their pages said "isn't a name", the search
+  "Not valid", and the MCP server, the ENS gateway and the watch list refused them. A label
+  refused only for its length or check digit is now `checkable` (`lib/query/rules.js`),
+  `findName` (`lib/query/parse.js`) opens it, and the registry decides: held shows as taken,
+  anything else keeps today's reason. The SDK and the API never checked those rules. `findName`
+  takes the first candidate the registry can be asked about, so bare digits are a number even
+  where today's rules refuse it: before, `95971529.readable.eth` and the MCP server's
+  `95971529` were read as the username `95971529.japan`.
 - **Long numbers end in a Luhn check digit** (from 8 digits). Number space is dense, so one wrong
   digit would otherwise reach a stranger. Long numbers are cheap (a dollar's worth a year, not free: the user expects free numbers to be
   registered in bulk by spammers, 2026-09-27); short ones are the scarce product.
@@ -335,6 +346,41 @@ Roadmap order, decided by the user:
   proofs, which only the holder's wallet signs) and Other chains; its summary shows the editor.
   `/docs` says it under Manage a name, Transfers, The registry, For AI agents, Events and the
   owner.
+- **An agent wallet for each name, ERC-6551 (2026-10-04, the user's request, after asking how
+  the standard could be used).** No contract change: the account answers to `ownerOf`. Its
+  address is ERC-6551's registry `0x0000…5758` with Tokenbound's AccountProxy `0x5526…7E7F`,
+  salt 0, the home chain and the name's token id (`config/tokenBound.js`, computed without a
+  read in `lib/tokenBound.js`, checked against the registry's `account()`), the pair Tokenbound's
+  tools use. The holder's page has an "Agent wallet" section (`components/names/AgentWallet`):
+  the address, its ETH, whether it exists, a button that points the name at it and back, and one
+  that moves its ETH to the holder. The summary's Points to says "Its agent wallet". Payments
+  still go to `target`; the wallet gets them only once the holder points the name there.
+  - **It is never reset**, unlike the target, records and editor. The token id comes from the
+    label, so the address is the same for every holder, and whatever is in it passes to whoever
+    holds the name next: a buyer, or whoever registers it after it expires. Until that
+    registration the last holder still controls it (`ownerOf` stays theirs after expiry), so an
+    expired name's page shows the section to its holder while it holds ETH. The section and
+    `/docs` (Manage, Renewal, Transfers, For AI agents) say so.
+  - Tokenbound's proxy runs nothing until `initialize(AccountV3)`, which anyone may call once,
+    and only with an implementation Tokenbound's guardian trusts. The first move out creates and
+    initializes the account in one transaction through Multicall3, or only initializes one
+    someone created bare. A first version assumed the proxy fell back to AccountV3 and made
+    accounts that couldn't send; the fork caught it.
+  - **It exists on the registry's chain alone.** On any other chain its address belongs to an
+    account bound to another chain, whose `owner()` is the zero address (checked on a fork), so
+    what is sent there can't be moved. The registry's `addr` still answers every EVM chain with
+    `target`, so while a name points at its agent wallet (the user's choice, 2026-10-04, over a
+    contract rule now): the SDK's `getAddress` answers null for `'eth'` and every EVM coin type
+    but the registry chain's, `getProfile` and `getAgent` say `agentWallet: true`, the MCP server
+    adds a note, and the ENS gateway answers the registry chain's coin type alone. The section
+    and `/docs` say that an app reading the registry directly may still show it elsewhere. A
+    contract rule (answer only the home chain when the target is a contract, with the site
+    creating the wallet when it points a name at it) was offered for the mainnet changes.
+  - Robinhood Chain (4663) has the 6551 registry, Tokenbound's proxy and AccountV3, and
+    Multicall3 at the same addresses (checked 2026-10-04); add its id to `chainIds` when the
+    registry moves. Its testnet (46630) has the registry and Multicall3 but not Tokenbound's
+    contracts, so no agent wallets there.
+  - Not done: tokens and NFTs in it are moved elsewhere (the explorer link lists them).
 - **The deploy page only deploys and verifies (2026-09-29).** The user uses it for that alone
   and wants every setting of the registry on `/admin`. Its Registry setup panel (payment token,
   presets, reprice, reserve) is gone. `/admin` opens with `SetupGuide`, shown until done:
@@ -968,6 +1014,11 @@ as deployed.
    from the registry. Then `node tests/e2e/sdk.mjs` reads the same back through the SDK and
    the API. Then `node tests/e2e/editor.mjs`: the buyer makes Anvil's fourth account the editor
    of `+0 42421230`, which points it and saves its records from the name's page, then removes it.
+   Then `node tests/e2e/agentWallet.mjs`: 0.02 ETH is sent to the agent wallet of `+0 4343`,
+   whose holder points the name at it, moves the ETH out (creating the account) and points it
+   back. With `E2E_FORWARD_RPC`, `E2E_REGISTRY` and `E2E_NAME` it runs against a dev server that
+   reads a public RPC, on a real name whose holder the fork impersonates (passed 2026-10-04 on
+   Base Sepolia's `0x7c63…97D6` through the dev server on 3003, with `4523230.japan`).
 8. `node tests/e2e/nft.mjs`: follows `tokenURI` to the site and checks the name and image of
    `+0 4242` and `+0 4242 1230`.
 9. `node tests/e2e/gasless.mjs`: with `RELAYER_PRIVATE_KEY` in `.env.local` set to `RELAYER_KEY`

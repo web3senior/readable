@@ -14,7 +14,7 @@ import useNamespaces from '@/hooks/useNamespaces'
 import useWatchlist from '@/hooks/useWatchlist'
 import { formatDate } from '@/lib/format'
 import { namePath } from '@/lib/namespaces'
-import { parseQuery } from '@/lib/query/parse'
+import { findName } from '@/lib/query/parse'
 import { searchPath } from '@/lib/searchLink'
 import styles from './Watchlist.module.scss'
 
@@ -64,7 +64,7 @@ export default function Watchlist() {
   const candidates = useMemo(
     () =>
       names
-        .map((name) => ({ name, candidate: parseQuery(name, namespaces).candidates.find((found) => found.valid) }))
+        .map((name) => ({ name, candidate: findName(name, namespaces) }))
         .filter(({ candidate }) => candidate),
     [names, namespaces]
   )

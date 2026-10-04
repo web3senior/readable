@@ -107,6 +107,42 @@ export const site = {
       self: 'This wallet',
       note: 'You edit this name for its holder: where it points, its records and its addresses. Only the holder can move it or name another editor.',
     },
+    // A wallet of the name's own (ERC-6551, config/tokenBound.js), controlled by whoever holds the
+    // name. Payments reach it only once the holder points the name at it
+    agentWallet: {
+      title: 'Agent wallet',
+      // In the summary's Points to, when the name points there
+      target: 'Its agent wallet',
+      intro:
+        'A wallet that belongs to {name} itself (ERC-6551). Whoever holds the name controls it, so an agent’s earnings, tokens and NFTs can change hands together with its name. Payments go where the name points: point it here to have them land in this wallet.',
+      warning:
+        'Everything in it goes with the name: to whoever you sell or send {name} to, and to whoever registers it after it expires. Keep in it only what should change hands with the name.',
+      // `{chain}` is the registry's chain, the only one the wallet exists on
+      chainOnly:
+        'It exists on {chain} only. While {name} points here, this site, its API and ENS give no wallet for other chains, but an app that reads the registry itself may still show this address there, where nothing sent can be moved.',
+      expired: '{name} has expired, but until someone registers it again this wallet is still yours. Move what it holds out now.',
+      address: 'Address',
+      balance: 'Holds',
+      status: 'Status',
+      created: 'Created',
+      notCreated: 'Not created yet',
+      unread: 'Could not be read',
+      // Shown while it isn't created and holds something: moving it out creates it first
+      createNote: 'It receives before it is created. Moving anything out creates it first, in a transaction of its own.',
+      fee: 'Moving it out is an ordinary transaction, with a network fee.',
+      explorer: 'See everything it holds',
+      point: 'Point {name} here',
+      pointBack: 'Point {name} back at your wallet',
+      move: 'Move {amount} to your wallet',
+      pointing: 'Pointing {name} at its agent wallet',
+      pointed: '{name} points at its agent wallet',
+      pointingBack: 'Pointing {name} back at your wallet',
+      pointedBack: '{name} points at your wallet',
+      creating: 'Creating the agent wallet of {name}',
+      createdDone: 'The agent wallet of {name} is created',
+      moving: 'Moving {amount} to your wallet',
+      moved: '{amount} moved to your wallet',
+    },
     chains: 'Other chains',
     agent: 'AI agent',
     unregistered: '{name} isn’t registered.',

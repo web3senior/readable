@@ -1,6 +1,17 @@
-import { createPublicClient, getAddress as checksum, hexToBytes, http, zeroAddress } from 'viem'
+import {
+  concat,
+  createPublicClient,
+  encodeAbiParameters,
+  getAddress as checksum,
+  getContractAddress,
+  hexToBytes,
+  http,
+  isAddressEqual,
+  zeroAddress,
+  zeroHash,
+} from 'viem'
 import { btc, sol } from '@ensdomains/address-encoder/coins'
-import { ETH_COIN_TYPE, KIND, RECORDS_KEY, abi, chains, registries } from './registry.js'
+import { AGENT_WALLET, ETH_COIN_TYPE, EVM_FLAG, KIND, RECORDS_KEY, abi, chains, registries } from './registry.js'
 
 // Coins known by name. Any other chain: pass its coder from @ensdomains/address-encoder/coins
 const COINS = { btc, sol }
@@ -46,6 +57,25 @@ function locateIn(namespaces, name) {
   if (namespace) return { namespace, label: digits.slice(namespace.name.length) }
   return !explicit && numbers.length ? { namespace: numbers[0], label: compact } : null
 }
+
+// ERC-6551's account: an ERC-1167 proxy with the token it belongs to appended, deployed by the
+// registry with CREATE2, so its address follows from those bytes alone
+const PROXY_HEAD = '0x3d60ad80600a3d3981f3363d3d373d3d3d363d73'
+const PROXY_FOOT = '0x5af43d82803e903d91602b57fd5bf3'
+const TOKEN = [{ type: 'bytes32' }, { type: 'uint256' }, { type: 'address' }, { type: 'uint256' }]
+
+/** The address of a name's agent wallet, on the registry's chain. */
+function agentWalletOf(chainId, registry, tokenId) {
+  const bytecode = concat([
+    PROXY_HEAD,
+    AGENT_WALLET.implementation.toLowerCase(),
+    PROXY_FOOT,
+    encodeAbiParameters(TOKEN, [zeroHash, BigInt(chainId), registry, BigInt(tokenId)]),
+  ])
+  return getContractAddress({ opcode: 'CREATE2', from: AGENT_WALLET.registry, salt: zeroHash, bytecode })
+}
+
+const isEvmCoin = (coinType) => coinType === ETH_COIN_TYPE || coinType >= EVM_FLAG
 
 /** A coin as `'btc'`, `'sol'`, `'eth'`, a coin type, or a coder from @ensdomains/address-encoder. */
 function coinOf(coin) {
@@ -122,7 +152,14 @@ export function createReadable({ chain = 8453, registry, rpc, client, cacheMs = 
     return tokenId === null ? null : { ...found, tokenId }
   }
 
-  /** The wallet a name reaches, or null: never registered, expired, or pointed at nobody. */
+  // The coin type of the registry's own chain, the one chain a name's agent wallet exists on
+  const homeCoinType = EVM_FLAG + viemChain.id
+  const pointsToAgentWallet = (tokenId, target) => isAddressEqual(target, agentWalletOf(viemChain.id, address, tokenId))
+
+  /**
+   * The wallet a name reaches on the registry's chain, or null: never registered, expired, or
+   * pointed at nobody. Most EVM chains use it too, unless it is the name's agent wallet.
+   */
   async function resolve(name) {
     const found = await locate(name)
     if (!found) return null
@@ -130,14 +167,26 @@ export function createReadable({ chain = 8453, registry, rpc, client, cacheMs = 
     return target === zeroAddress ? null : target
   }
 
+  // On an EVM chain a name reaches the wallet it points to. Its agent wallet exists on the
+  // registry's chain alone: anywhere else nobody controls that address, so it answers null there
+  async function evmAddress(name, coinType) {
+    const found = await locate(name)
+    if (!found) return null
+    const target = await read('resolve', [found.tokenId])
+    if (target === zeroAddress) return null
+    if (coinType !== homeCoinType && pointsToAgentWallet(found.tokenId, target)) return null
+    return target
+  }
+
   /**
-   * The name's address on a chain. `'eth'` (or coin type 60) is the wallet it points to, which
-   * most EVM chains use; any other coin is what the holder set for that chain. A coin with no
-   * coder comes back as the stored bytes.
+   * The name's address on a chain. `'eth'` (coin type 60) and an EVM chain's ENSIP-11 coin type
+   * are the wallet it points to, unless that is the name's agent wallet, which only the
+   * registry's own chain answers; any other coin is what the holder set for that chain. A coin
+   * with no coder comes back as the stored bytes.
    */
   async function getAddress(name, coin = 'eth') {
     const { coinType, coder } = coinOf(coin)
-    if (coinType === ETH_COIN_TYPE) return resolve(name)
+    if (isEvmCoin(coinType)) return evmAddress(name, coinType)
     const found = await locate(name)
     if (!found) return null
     const bytes = await read('addr', [found.tokenId, BigInt(coinType)])
@@ -194,11 +243,14 @@ export function createReadable({ chain = 8453, registry, rpc, client, cacheMs = 
         }
       })
     )
+    const reached = target === zeroAddress ? null : target
     return {
       name: display(namespace, record.label),
       tokenId: tokenId.toString(),
       owner,
-      address: target === zeroAddress ? null : target,
+      address: reached,
+      // The name points to its agent wallet, which exists on the registry's chain alone
+      agentWallet: Boolean(reached) && pointsToAgentWallet(tokenId, reached),
       expiresAt: Number(record.expiresAt),
       addresses,
       records: parseRecords(text),
@@ -221,6 +273,7 @@ export function createReadable({ chain = 8453, registry, rpc, client, cacheMs = 
       erc8004: text(agent.erc8004),
       payment: text(agent.payment) ?? profile.address,
       address: profile.address,
+      agentWallet: profile.agentWallet,
     }
   }
 

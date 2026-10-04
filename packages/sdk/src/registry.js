@@ -17,6 +17,16 @@ export const KIND = { NAME: 0, NUMBER: 1 }
 // SLIP-44: the coin type that stands for the name's own EVM address (`resolve`)
 export const ETH_COIN_TYPE = 60
 
+// ENSIP-11: an EVM chain's coin type is 0x80000000 | its chain id
+export const EVM_FLAG = 0x80000000
+
+// A name's own wallet (ERC-6551), its agent wallet on readable.name: ERC-6551's registry with
+// Tokenbound's account proxy and salt 0. It exists on the registry's chain alone
+export const AGENT_WALLET = {
+  registry: '0x000000006551c19487814612e58FE06813775758',
+  implementation: '0x55266d75D1a14E4572138116aF39863Ed6596E7F',
+}
+
 // The read functions the SDK calls, from IReadable
 export const abi = [
   {

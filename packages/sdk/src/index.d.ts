@@ -7,7 +7,10 @@ export interface CoinCoder {
   decode: (text: string) => Uint8Array
 }
 
-/** `'eth'` (the wallet a name points to), `'btc'`, `'sol'`, a SLIP-44 coin type, or a coder. */
+/**
+ * `'eth'` (the wallet a name points to), `'btc'`, `'sol'`, a SLIP-44 coin type (an EVM chain's
+ * ENSIP-11 one included), or a coder.
+ */
 export type Coin = 'eth' | 'evm' | 'btc' | 'sol' | number | bigint | CoinCoder
 
 /** A name's records document. Every field is optional, and other apps may add their own. */
@@ -33,8 +36,13 @@ export interface Profile {
   name: string
   tokenId: string
   owner: Address | null
-  /** The wallet the name reaches, which most EVM chains use. */
+  /** The wallet the name reaches on the registry's chain; most EVM chains use it too, unless `agentWallet`. */
   address: Address | null
+  /**
+   * `address` is the name's agent wallet (ERC-6551), which exists on the registry's chain alone.
+   * Send to it there only: on any other chain nobody controls that address.
+   */
+  agentWallet: boolean
   /** When the name's term ends, in seconds. */
   expiresAt: number
   addresses: { btc: string | null; sol: string | null }
@@ -48,6 +56,8 @@ export interface Agent {
   /** Where the agent is paid: its own payment address, or the name's wallet. */
   payment: Address | null
   address: Address | null
+  /** `address` is the name's agent wallet, on the registry's chain alone. */
+  agentWallet: boolean
 }
 
 export interface ReadableOptions {
@@ -66,9 +76,12 @@ export interface ReadableOptions {
 export interface Readable {
   registry: Address
   chain: Chain
-  /** The wallet a name reaches, or null: never registered, expired, or pointed at nobody. */
+  /** The wallet a name reaches on the registry's chain, or null: never registered, expired, or pointed at nobody. */
   resolve(name: string): Promise<Address | null>
-  /** The name's address on a chain, or null. A coin with no coder comes back as the stored bytes. */
+  /**
+   * The name's address on a chain, or null. An EVM chain other than the registry's answers null
+   * while the name points to its agent wallet. A coin with no coder comes back as the stored bytes.
+   */
   getAddress(name: string, coin?: Coin): Promise<string | Hex | null>
   /** The name's records, `{}` when it has none, or null when the name isn't live. */
   getRecords(name: string): Promise<Records | null>
