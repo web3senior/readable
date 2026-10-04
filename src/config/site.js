@@ -81,7 +81,7 @@ export const site = {
   names: {
     path: '/names',
     title: 'My names',
-    intro: 'The numbers and names this wallet holds. Open one to point it at a wallet, make it your primary name or fill in its records.',
+    intro: 'The numbers and names this wallet holds. Open one to point it at a wallet, make it your primary name, fill in its records or transfer it.',
     find: 'Find a name',
     gates: {
       unconfigured: 'Your names appear here once Readable launches.',

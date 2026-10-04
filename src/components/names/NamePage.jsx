@@ -19,7 +19,7 @@ import RecordsForm from '@/components/names/RecordsForm'
 import ReminderButton from '@/components/names/ReminderButton'
 import SharePanel from '@/components/names/SharePanel'
 import WatchButton from '@/components/names/WatchButton'
-import { addressesSpec, editorSpec, primarySpec, targetSpec } from '@/components/names/specs'
+import { addressesSpec, editorSpec, primarySpec, targetSpec, transferSpec } from '@/components/names/specs'
 import PaymentDialog from '@/components/search/PaymentDialog'
 import { useWalletDialog } from '@/components/WalletDialogProvider'
 import { chainNameFor, marketplaceFor } from '@/config/chains'
@@ -187,6 +187,7 @@ export default function NamePage({ slug }) {
           <ActionPanel key={`chains:${Object.values(name.addresses).join()}`} spec={addressesSpec(args)} heading="Other chains" />
           <ActionPanel key={`editor:${name.editor}`} spec={editorSpec(args)} heading={profile.editor.term} />
           {agentWalletPanel(true)}
+          <ActionPanel key={`transfer:${name.tokenId}`} spec={transferSpec(args)} heading="Transfer" />
           {share}
         </>
       )

@@ -381,6 +381,16 @@ Roadmap order, decided by the user:
     registry moves. Its testnet (46630) has the registry and Multicall3 but not Tokenbound's
     contracts, so no agent wallets there.
   - Not done: tokens and NFTs in it are moved elsewhere (the explorer link lists them).
+- **Transfer from My names (2026-10-04, the user's request: "add transfer too for my names").**
+  Each live card on My names has Transfer, which opens the admin's `ActionDialog`, and the
+  holder's page ends its changes with a Transfer section; both take `transferSpec`
+  (`components/names/specs.js`). It sends `transferFrom`, not `safeTransferFrom`: a Universal
+  Profile or an EIP-7702 account without an ERC-721 receiver would refuse a safe transfer,
+  which is also why the registry mints with `_mint`. Not relayed (the user chose name changes
+  only), so it says it costs a network fee, and it says what the registry resets. It refuses
+  before the wallet asks: the holder itself, the zero address, the registry, and the name's
+  own agent wallet, which would hold the name that controls it and lock both for good. An
+  expired name shows no Transfer, since the registry refuses to move it.
 - **The deploy page only deploys and verifies (2026-09-29).** The user uses it for that alone
   and wants every setting of the registry on `/admin`. Its Registry setup panel (payment token,
   presets, reprice, reserve) is gone. `/admin` opens with `SetupGuide`, shown until done:
@@ -775,7 +785,8 @@ fixes and a second check.
   server sends it at once, as on `/docs`.
 - My names cards keep the summary and gain **Manage**, a link to the page; their change
   buttons and dialogs are gone. A search result that is yours offers Manage too. **Renew stays
-  a dialog**: it is the checkout, with the wallet's signatures.
+  a dialog**: it is the checkout, with the wallet's signatures. Transfer joined it on the card
+  on 2026-10-04 (see Decisions).
 - `ui/Button` with an `href` inside the site now renders Next's `Link`, so moving between
   My names and a name's page keeps the app and the wallet connection.
 
@@ -1019,6 +1030,12 @@ as deployed.
    back. With `E2E_FORWARD_RPC`, `E2E_REGISTRY` and `E2E_NAME` it runs against a dev server that
    reads a public RPC, on a real name whose holder the fork impersonates (passed 2026-10-04 on
    Base Sepolia's `0x7c63…97D6` through the dev server on 3003, with `4523230.japan`).
+   Then `node tests/e2e/transfer.mjs`: the holder of `+0 4343` saves records and makes it
+   primary, has four mistyped addresses refused on the name's page, transfers it from My names
+   to Anvil's fourth account, and checks that the registry points it there with no records and
+   no primary name; that account sends it back from the name's page. It takes the same
+   `E2E_FORWARD_RPC`, `E2E_REGISTRY` and `E2E_NAME` (passed 2026-10-04 the same way, with
+   `4523230.japan`).
 8. `node tests/e2e/nft.mjs`: follows `tokenURI` to the site and checks the name and image of
    `+0 4242` and `+0 4242 1230`.
 9. `node tests/e2e/gasless.mjs`: with `RELAYER_PRIVATE_KEY` in `.env.local` set to `RELAYER_KEY`

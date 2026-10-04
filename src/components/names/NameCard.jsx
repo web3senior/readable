@@ -22,8 +22,11 @@ import styles from './NameCard.module.scss'
 const { path: NFT_PATH, art: NFT_ART } = site.nft
 const listAnd = new Intl.ListFormat('en', { type: 'conjunction' })
 
-/** One name as its holder sees it: its NFT, where it points and when it expires. Its page holds the changes. */
-export default function NameCard({ name, account, currency, now }) {
+/**
+ * One name as its holder sees it: its NFT, where it points and when it expires. Its page holds the
+ * changes; the card keeps Renew and Transfer, which `onTransfer` opens.
+ */
+export default function NameCard({ name, account, currency, now, onTransfer }) {
   const paymentRef = useRef(null)
   const { namespace } = name
   const expired = name.expiresAt <= now
@@ -100,6 +103,12 @@ export default function NameCard({ name, account, currency, now }) {
         <Button variant={expired ? 'primary' : 'secondary'} size="sm" onClick={() => paymentRef.current?.open()}>
           Renew
         </Button>
+        {/* A name whose term has ended can't change hands */}
+        {!expired && (
+          <Button variant="secondary" size="sm" onClick={() => onTransfer(name)}>
+            Transfer
+          </Button>
+        )}
         <ReminderButton name={name.display} path={page} expiresAt={name.expiresAt} variant="ghost" />
       </div>
 

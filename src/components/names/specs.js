@@ -1,8 +1,13 @@
 import { isAddress, isAddressEqual, zeroAddress } from 'viem'
 import { addresses } from '@/config/addresses'
 import { home } from '@/config/chains'
+import { registry } from '@/config/registry'
+import { site } from '@/config/site'
 import { addressBytes, addressText } from '@/lib/addresses'
 import { FormError } from '@/lib/adminActions'
+import { tokenBoundAccountOf } from '@/lib/tokenBound'
+
+const { profile } = site
 
 /**
  * Builders for the ActionDialog, one per thing a holder can change on a name. Each `submit`
@@ -79,6 +84,50 @@ export const editorSpec = ({ name, perform }) => {
         args: [name.tokenId, editor],
         pending: removing ? `Removing the editor of ${name.display}` : `Naming the editor of ${name.display}`,
         done: removing ? `${name.display} has no editor` : `The editor of ${name.display} is saved`,
+      })
+    },
+  }
+}
+
+// `transferFrom`, not `safeTransferFrom`: a Universal Profile or an EIP-7702 account without an
+// ERC-721 receiver would refuse a safe transfer, as the registry mints with `_mint` for them
+export const transferSpec = ({ name, perform, account }) => {
+  const agentWallet = tokenBoundAccountOf(name.tokenId)
+  const goes = [
+    name.primary && 'It stops being your primary name.',
+    agentWallet && `Its ${profile.agentWallet.title.toLowerCase()} goes with it, with everything in it.`,
+  ].filter(Boolean)
+  return {
+    title: `Transfer ${name.display}`,
+    description: [
+      `Send ${name.display} to another wallet, with the years left on it. It arrives pointing at its new holder, with no records, no addresses on other chains and no editor.`,
+      ...goes,
+      'A transfer is an ordinary transaction, with a network fee, and only the new holder can send the name back.',
+    ].join(' '),
+    fields: [
+      {
+        name: 'to',
+        label: 'New holder’s address',
+        type: 'address',
+        hint: 'Check it twice: a name sent to a wrong address, or to a contract that can’t hold NFTs, can’t be brought back.',
+      },
+    ],
+    initial: { to: '' },
+    submitLabel: 'Transfer',
+    tone: 'danger',
+    submit: (values) => {
+      const to = String(values.to ?? '').trim()
+      if (!isAddress(to)) throw new FormError('That is not a valid address')
+      if (isAddressEqual(to, zeroAddress)) throw new FormError('A name can’t be sent to the zero address')
+      if (isAddressEqual(to, account)) throw new FormError('This wallet holds it already')
+      if (isAddressEqual(to, registry.address)) throw new FormError('The registry can’t hold names')
+      // An account that answers to the name it holds: nobody could move either again
+      if (agentWallet && isAddressEqual(to, agentWallet)) throw new FormError('A name can’t be sent to its own agent wallet')
+      return perform({
+        functionName: 'transferFrom',
+        args: [account, to, name.tokenId],
+        pending: `Transferring ${name.display}`,
+        done: `${name.display} is transferred`,
       })
     },
   }

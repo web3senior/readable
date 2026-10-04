@@ -272,8 +272,8 @@ export default function DocsPage() {
             <p className={styles.doc__text}>
               <Link href={site.names.path}>{site.names.title}</Link> lists the names your wallet holds. The wallet holding a name, or the
               editor it names, signs each change, and while the site’s relayer is running it pays no fee: the wallet signs a message
-              instead of a transaction and the relayer sends it. A smart wallet’s change goes to the site’s paymaster instead, when there is one. Renewing is a
-              payment, so it is a transaction of its own.
+              instead of a transaction and the relayer sends it. A smart wallet’s change goes to the site’s paymaster instead, when there is one. Renewing and
+              transferring are not relayed: each is a transaction of its own, with a network fee.
             </p>
             <Spec
               rows={[
@@ -285,6 +285,7 @@ export default function DocsPage() {
                   ? [[agentWallet.title, <span key="w">A wallet of the name’s own, controlled by whoever holds it. Point the name at it to have payments land there. Whatever it holds goes with the name: <a href="#agents">For AI agents</a>.</span>]]
                   : []),
                 ['Renew', 'Adds years to the term.'],
+                ['Transfer', <span key="t">Sends the name to another wallet, with the years left on it. It arrives reset: <a href="#transfers">Transfers</a>.</span>],
                 ['Remind me to renew', 'A calendar file with a reminder a month and a week before the name expires. The site keeps no address and sends nothing.'],
               ]}
             />
@@ -348,7 +349,7 @@ export default function DocsPage() {
 
           <Section id="transfers">
             <p className={styles.doc__text}>
-              A name moves like any NFT: send it from your wallet, or sell it on a marketplace. The registry resets it as it moves, so a
+              A name moves like any NFT: transfer it from {site.names.title}, send it from your wallet, or sell it on a marketplace. The registry resets it as it moves, so a
               name that changes hands never keeps delivering to whoever held it before.
             </p>
             <ul className={styles.doc__list}>
