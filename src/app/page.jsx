@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { CaretRightIcon } from '@phosphor-icons/react/ssr'
 import HowItWorks from '@/components/home/HowItWorks'
@@ -7,9 +6,10 @@ import SearchExperience from '@/components/search/SearchExperience'
 import { site } from '@/config/site'
 import styles from './page.module.scss'
 
+// A search (/?q=4242) is the home page, not a page of its own
+export const metadata = { alternates: { canonical: '/' } }
+
 const { line, chain, claim } = site.hero
-// The file's size; the stylesheet sets it to the text's
-const LOGO_PX = 20
 
 /** The hero's second sentence, with the chain's badge and the claim in place. */
 function HeroLine() {
@@ -20,7 +20,7 @@ function HeroLine() {
       return (
         <span key={index} className={styles.page__chain}>
           <span className={styles.page__badge}>
-            <Image className={styles.page__logo} src={chain.logo} width={LOGO_PX} height={LOGO_PX} alt="" />
+            <span className={styles.page__logo} style={{ '--chain-logo': `url(${chain.logo})` }} aria-hidden="true" />
             {chain.name}
           </span>
           {parts[index + 1].match(/^\S*/)[0]}

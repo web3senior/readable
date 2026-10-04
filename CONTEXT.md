@@ -43,8 +43,9 @@ Roadmap order, decided by the user:
 - **The hero names Robinhood Chain in a badge (2026-10-04, the user's request, after Arco's
   "lands in a real [Uniswap v4] pool").** After the subtitle: "Owned onchain on [Robinhood
   Chain], and **updates are gasless**." (`site.hero.line`, `chain`, `claim`). The badge holds
-  the chain's logo (`public/robinhood.svg`, the user's file: a lime tile, shown in its own
-  colors, not as a mask) and its name, a size smaller than the text. Each sentence of the
+  the chain's logo (`public/robinhood.svg`, the user's file: since 2026-10-04 a lime feather
+  without a tile, painted as a mask in `--color-chain-mark`, dark ink in light mode where the
+  lime vanished, the lime in dark mode) and its name, a size smaller than the text. Each sentence of the
   description takes a line of its own, so it is two lines on a wide screen (the user's
   request). The share card keeps the plain `site.subtitle`. The
   user's word was "it will be on Robinhood", in reply to a Base badge: the registry is to live
@@ -52,6 +53,14 @@ Roadmap order, decided by the user:
   docs and the copy that names Base (its wallet, OpenSea, the onramp, the ETH/USD
   feed, the Hup forwarders) still follow the Base decision below. The claim is only about a
   holder's changes to a name: buying still costs gas.
+- **Search copy lives in `config/site.js`, not in env (2026-10-04, the user's choice over
+  hupsocial's `NEXT_PUBLIC_TITLE` and kin).** It is the same on every deployment, and a
+  `NEXT_PUBLIC_*` value is fixed at build anyway. `site.description` is the hero in one sentence,
+  under 160 characters; `homeChain` feeds it, the keywords and the hero's badge. The layout sets
+  no `openGraph` title or description, so each page's preview carries its own; the home page
+  and `/agents` name their own canonical (the layout's `/` had made `/agents` a copy of the
+  home page). `app/robots.js` keeps crawlers off `/api/`; `app/sitemap.js` lists `/`, `/docs`
+  and `/agents`.
 - **The site says plainly how few apps read names yet (2026-10-04, the user's request).** The
   user's reason: most ENS-like registries of the last years failed on integration, not on
   building. The register dialog (not renew) says "Readable is new." and where a name works

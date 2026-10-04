@@ -13,8 +13,9 @@ export const metadata = {
   title: { template: `%s · ${site.name}`, default: `${site.name}: ${site.tagline}` },
   description: site.description,
   keywords: site.keywords,
-  alternates: { canonical: '/' },
-  openGraph: { title: site.name, description: site.description, siteName: site.name, type: 'website' },
+  applicationName: site.name,
+  // Each page's own title and description fill the preview; set here, every page would share them
+  openGraph: { siteName: site.name, type: 'website' },
   twitter: { card: 'summary_large_image' },
 }
 

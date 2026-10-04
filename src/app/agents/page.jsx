@@ -5,6 +5,7 @@ import styles from '../names/page.module.scss'
 export const metadata = {
   title: site.agents.title,
   description: site.agents.intro,
+  alternates: { canonical: site.agents.path },
 }
 
 // Sent at once; the directory is read in the browser, from the server's cached reading

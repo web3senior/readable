@@ -71,11 +71,13 @@
     vertical-align: middle;
   }
 
-  // The chain's own tile, in its own colors in either theme
+  // The chain's mark, a mask painted in its token: the file's lime alone vanishes on a light badge
   &__logo {
+    flex-shrink: 0;
     width: 1.25em;
     height: 1.25em;
-    border-radius: var(--radius-pill);
+    background: var(--color-chain-mark);
+    mask: var(--chain-logo) center / contain no-repeat;
   }
 
   &__claim {

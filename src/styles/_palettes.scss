@@ -52,6 +52,9 @@
   --color-qr-ink: #0f1419;
   --color-qr-plate: #ffffff;
 
+  // The hero badge's chain mark: Robinhood's lime is lost on a light surface, so it is the ink here
+  --color-chain-mark: #0f1419;
+
   // Four lights, the same in light and dark: the glow around the phones of How it works
   // (`--shadow-glow`) and the Solana mark on one of them
   --color-light-violet: #a66bff;
@@ -112,6 +115,9 @@
   // A QR code is dark on light in either theme, which every scanner reads
   --color-qr-ink: #0f1419;
   --color-qr-plate: #ffffff;
+
+  // Robinhood's own lime, which reads on the dark badge
+  --color-chain-mark: #ccff00;
 
   // The same four lights in the dark
   --color-light-violet: #a66bff;

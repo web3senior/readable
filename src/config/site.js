@@ -1,3 +1,6 @@
+// The chain the hero names, also in the search description and keywords
+const homeChain = { name: 'Robinhood Chain', logo: '/robinhood.svg' }
+
 export const site = {
   name: 'readable.name',
   wordmark: { lead: 'readable', tail: '.name' },
@@ -6,9 +9,24 @@ export const site = {
   // adds those onchain
   tagline: 'Get a readable name',
   subtitle: 'Give wallets and AI agents a username or a number instead of a 0x… address.',
-  description: 'Look up and register onchain numbers for wallets and AI agents.',
+  // What a search result and a link's preview say under the title: the hero in one sentence,
+  // under 160 characters so a search engine shows all of it
+  description: `Get a readable name for your wallet or AI agent: a username or a number instead of a 0x… address, owned onchain on ${homeChain.name}, with gasless updates.`,
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005',
-  keywords: ['readable names', 'onchain numbers', 'wallet numbers', 'wallet names', 'ai agents'],
+  keywords: [
+    'readable name',
+    'wallet name',
+    'wallet username',
+    'crypto username',
+    'onchain number',
+    'onchain identity',
+    'AI agent name',
+    'AI agent identity',
+    homeChain.name,
+  ],
+  // robots.txt. Pages marked noindex (/admin, /names) stay crawlable, so a search engine reads
+  // the mark; the API is left alone, since each call reads the chain
+  crawl: { disallow: ['/api/'] },
   // Metadata can't read CSS variables, so the browser chrome colors mirror --color-bg
   themeColor: { light: '#ffffff', dark: '#0b0e13' },
   footer: 'Names for people and agents, onchain.',
@@ -458,7 +476,7 @@ export const site = {
   // is WalletDemo's, off the page: a wallet's address turns into its number, one holder after another
   hero: {
     line: 'Owned onchain on {chain}, and {claim}.',
-    chain: { name: 'Robinhood Chain', logo: '/robinhood.svg' },
+    chain: homeChain,
     claim: 'updates are gasless',
     more: 'More info',
     label: 'A wallet address turns into a Readable number',
