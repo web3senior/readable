@@ -1,0 +1,7 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@reown/appkit': false
+  bufferutil: false
+  sharp: false
+  unrs-resolver: false
+  utf-8-validate: false

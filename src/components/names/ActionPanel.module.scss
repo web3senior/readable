@@ -1,0 +1,35 @@
+.panel {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  &__title {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    overflow-wrap: anywhere;
+  }
+
+  &__description {
+    max-width: 60ch;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-start;
+  }
+}

@@ -1,0 +1,90 @@
+@use '../../styles/mixins' as *;
+
+.watch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  &__title {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+  }
+
+  &__intro {
+    max-width: 60ch;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__list {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+
+  &__item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-3) var(--space-4);
+
+    & + & {
+      border-top: 1px solid var(--color-border);
+    }
+
+    @include from('sm') {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+    }
+  }
+
+  &__name {
+    min-width: 0;
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      color: var(--color-accent-text);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+      border-radius: var(--radius-sm);
+    }
+  }
+
+  // Under the name on a phone, beside it from `sm`
+  &__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    @include from('sm') {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+
+  &__date {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__skeleton {
+    width: 8rem;
+    height: 1.25rem;
+    border-radius: var(--radius-pill);
+  }
+}

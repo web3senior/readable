@@ -1,0 +1,58 @@
+@use '../../styles/mixins' as *;
+
+.story {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: var(--space-10);
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--color-border);
+
+  @include from('lg') {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    align-items: center;
+    gap: var(--space-16);
+  }
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    max-width: 34rem;
+    text-align: center;
+
+    @include from('lg') {
+      align-items: flex-start;
+      text-align: start;
+    }
+  }
+
+  &__eyebrow {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-accent-text);
+  }
+
+  &__title {
+    font-size: var(--text-display);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  &__body {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+  }
+
+  &__note {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+}

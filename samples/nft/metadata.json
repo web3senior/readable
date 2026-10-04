@@ -1,0 +1,27 @@
+{
+  "name": "+0 4242 1230",
+  "description": "+0 4242 1230 is a readable name on readable.name.",
+  "image": "https://readable.name/nft/97777072972893470552268196847448963764225090304689912102410055650548199618836/image",
+  "external_url": "https://readable.name/?q=%2B0%204242%201230",
+  "attributes": [
+    {
+      "trait_type": "Kind",
+      "value": "Number"
+    },
+    {
+      "trait_type": "Length",
+      "display_type": "number",
+      "value": 8
+    },
+    {
+      "trait_type": "Registered",
+      "display_type": "date",
+      "value": 1790640000
+    },
+    {
+      "trait_type": "Expires",
+      "display_type": "date",
+      "value": 1822176000
+    }
+  ]
+}

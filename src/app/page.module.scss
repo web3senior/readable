@@ -1,0 +1,104 @@
+@use '../styles/mixins' as *;
+
+.page {
+  flex: 1;
+  padding: var(--space-12) 0 var(--space-16);
+
+  @include from('md') {
+    padding-top: var(--space-16);
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-gutter);
+  }
+
+  // While a name is looked up the page is the search and its result, and nothing else
+  &__container:has([data-searching]) &__intro,
+  &__container:has([data-searching]) &__activity,
+  &__container:has([data-searching]) &__how {
+    display: none;
+  }
+
+  &__intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  &__title {
+    max-width: 18ch;
+    font-size: var(--text-display);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  // Two sentences, a line each where the page is wide enough
+  &__subtitle {
+    max-width: 72ch;
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    text-wrap: balance;
+  }
+
+  &__sentence {
+    display: block;
+  }
+
+  &__chain {
+    white-space: nowrap;
+  }
+
+  // The chain the registry lives on, a pill in the line of text
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-sunken);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1.2;
+    vertical-align: middle;
+  }
+
+  // The chain's own tile, in its own colors in either theme
+  &__logo {
+    width: 1.25em;
+    height: 1.25em;
+    border-radius: var(--radius-pill);
+  }
+
+  &__claim {
+    color: var(--color-text);
+    font-weight: var(--weight-semibold);
+  }
+
+  &__more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent-text);
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}

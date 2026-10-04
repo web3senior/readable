@@ -1,0 +1,38 @@
+{
+  "name": "readable-sdk",
+  "version": "0.2.0",
+  "description": "Resolve readable.name numbers and names: the wallet, the addresses on other chains, the records, the AI agent and the reverse name.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "types": "./src/index.d.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "readable",
+    "names",
+    "resolver",
+    "ai-agents",
+    "base",
+    "viem"
+  ],
+  "homepage": "https://readable.name/docs#sdk",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@ensdomains/address-encoder": "^1.1.4"
+  },
+  "peerDependencies": {
+    "viem": "^2.0.0"
+  }
+}

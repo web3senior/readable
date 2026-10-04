@@ -1,0 +1,54 @@
+@use '../../styles/mixins' as *;
+
+.partners {
+  width: 100%;
+
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6) var(--space-8);
+  }
+
+  &__partner {
+    display: inline-flex;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-subtle);
+
+    &--link {
+      transition: color var(--duration) var(--ease);
+
+      &:hover {
+        color: var(--color-text);
+      }
+
+      &:focus-visible {
+        @include focus-ring;
+        color: var(--color-text);
+      }
+    }
+  }
+
+  // Rounded here, since some files come with square corners and some with round ones. Every
+  // logo is shown in grays, whatever the colors of its file
+  &__logo {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--partner-logo) center / contain no-repeat;
+    filter: grayscale(1);
+
+    // The file is a mask and the ink is the text's, so the logo follows the theme
+    &--ink {
+      border-radius: 0;
+      background: currentColor;
+      mask: var(--partner-logo) center / contain no-repeat;
+      filter: none;
+    }
+
+    &--wordmark {
+      width: 9rem;
+    }
+  }
+}

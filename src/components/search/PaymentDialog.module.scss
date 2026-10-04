@@ -1,0 +1,122 @@
+@use '../../styles/mixins' as *;
+
+.payment {
+  width: min(24rem, calc(100vw - 2 * var(--container-gutter)));
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  // Outside [open], which goes at once on close while the dialog fades out
+  flex-direction: column;
+  gap: var(--space-4);
+
+  &[open] {
+    display: flex;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  &__title {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    overflow-wrap: anywhere;
+  }
+
+  &__name {
+    color: var(--color-accent-text);
+  }
+
+  &__years {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  &__stepper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  &__count {
+    min-width: 5.5rem;
+    font-weight: var(--weight-semibold);
+    text-align: center;
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  &__term {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__total {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+  }
+
+  &__amount {
+    text-align: end;
+  }
+
+  // The dollar value, under the amount in ETH
+  &__usd {
+    display: block;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    color: var(--color-text-muted);
+  }
+
+  &__note {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  // How few apps read names yet, before a first payment
+  &__early {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+
+    strong {
+      font-weight: var(--weight-semibold);
+      color: var(--color-text);
+    }
+  }
+
+  &__more {
+    border-radius: var(--radius-sm);
+    color: var(--color-accent-text);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}

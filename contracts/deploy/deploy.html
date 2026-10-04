@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Readable · CREATE2 Deployer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0e1116;
+      --panel: #161b22;
+      --border: #2d333b;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #2aabee;
+      --on-accent: #0e1116;
+      --ok: #3fb950;
+      --warn: #d29922;
+      --err: #f85149;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem 1rem 4rem;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .deployer {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .deployer__title { font-size: 1.2rem; margin: 0; }
+    .deployer__subtitle { color: var(--muted); margin: 0 0 .5rem; }
+    .deployer__panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+    .deployer__label { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+    .deployer__input,
+    .deployer__textarea {
+      width: 100%;
+      background: #0d1117;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .5rem .6rem;
+      font: inherit;
+    }
+    .deployer__textarea { min-height: 140px; resize: vertical; word-break: break-all; }
+    .deployer__row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+    .deployer__row > .deployer__input { flex: 1 1 160px; width: auto; }
+    .deployer__button {
+      background: var(--accent);
+      color: var(--on-accent);
+      border: 0;
+      border-radius: 6px;
+      padding: .55rem 1.1rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .deployer__button--secondary { background: #21262d; border: 1px solid var(--border); }
+    .deployer__button:disabled { opacity: .45; cursor: not-allowed; }
+    .deployer__address { font-weight: 700; word-break: break-all; }
+    .deployer__address--ok { color: var(--ok); }
+    .deployer__address--err { color: var(--err); }
+    .deployer__meta { color: var(--muted); }
+    .deployer__log {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .75rem;
+      min-height: 130px;
+      max-height: 320px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: .82rem;
+    }
+    .deployer__ctor { display: flex; flex-direction: column; gap: .45rem; }
+    .deployer__ctor:empty { display: none; }
+    .deployer__ctor label { display: flex; flex-direction: column; gap: .2rem; }
+    .deployer__ctor span { color: var(--muted); font-size: .78rem; }
+    .deployer__log-line--ok { color: var(--ok); }
+    .deployer__log-line--warn { color: var(--warn); }
+    .deployer__log-line--err { color: var(--err); }
+    a { color: #58a6ff; }
+  </style>
+</head>
+<body>
+  <main class="deployer">
+    <h1 class="deployer__title">Readable · CREATE2 Deployer</h1>
+    <p class="deployer__subtitle">
+      Deploys the Readable registry at the same address on every chain via the canonical factory
+      <span id="factoryAddr"></span>, then sets it up: namespaces, prices, reserved labels.
+    </p>
+
+    <section class="deployer__panel">
+      <div class="deployer__row">
+        <button id="connectBtn" class="deployer__button">Connect wallet</button>
+        <span id="walletInfo" class="deployer__meta">not connected</span>
+      </div>
+      <div class="deployer__row">
+        <span class="deployer__meta">Factory on this chain:</span>
+        <span id="factoryStatus">—</span>
+      </div>
+    </section>
+
+    <section class="deployer__panel">
+      <span class="deployer__label">Precompiled contracts</span>
+      <div class="deployer__row">
+        <select id="artifactSelect" class="deployer__input" style="flex: 1 1 260px"></select>
+        <button id="loadArtifactBtn" class="deployer__button deployer__button--secondary">Load bytecode</button>
+      </div>
+      <div id="ctorFields" class="deployer__ctor"></div>
+      <span id="artifactHint" class="deployer__meta">Pick a contract to fill its constructor arguments.</span>
+    </section>
+
+    <section class="deployer__panel">
+      <label class="deployer__label" for="saltInput">Salt (bytes32)</label>
+      <input id="saltInput" class="deployer__input" spellcheck="false" />
+
+      <!-- keccak of a label: same label, same bytes, same address -->
+      <div class="deployer__row">
+        <input id="saltLabelInput" class="deployer__input" spellcheck="false" placeholder="salt label, e.g. readable-arc-2" />
+        <button id="deriveSaltBtn" class="deployer__button deployer__button--secondary">Derive salt from label</button>
+        <button id="defaultSaltBtn" class="deployer__button deployer__button--secondary">Default salt</button>
+      </div>
+      <span id="saltHint" class="deployer__meta">Using the default salt.</span>
+
+      <label class="deployer__label" for="bytecodeInput">Init bytecode (creation code + encoded constructor args)</label>
+      <textarea id="bytecodeInput" class="deployer__textarea" spellcheck="false" placeholder="0x6080604052..."></textarea>
+
+      <div class="deployer__row">
+        <span class="deployer__meta">Predicted address:</span>
+        <span id="predictedAddr" class="deployer__address">—</span>
+      </div>
+      <div class="deployer__row">
+        <span class="deployer__meta">Code at predicted address (current chain):</span>
+        <span id="targetStatus">—</span>
+      </div>
+
+      <div class="deployer__row">
+        <label class="deployer__meta" for="feeMode">Fee</label>
+        <!-- Gas USED is fixed by the bytecode; only the price per gas moves -->
+        <select id="feeMode" class="deployer__input" style="width: auto;">
+          <option value="auto">chain default</option>
+          <option value="cheapest">cheapest — base fee, no tip; waits if the fee rises</option>
+          <option value="priority">priority — tip bumped for the next block</option>
+        </select>
+        <button id="checkBtn" class="deployer__button deployer__button--secondary" disabled>Check chain</button>
+        <button id="deployBtn" class="deployer__button" disabled>Deploy</button>
+      </div>
+    </section>
+
+    <section class="deployer__panel">
+      <span class="deployer__label">Next</span>
+      <span class="deployer__meta">
+        This page only deploys. Put the deployed address in the site's NEXT_PUBLIC_READABLE_ADDRESS, then open
+        /admin with the owner wallet: the namespaces, prices and reservations are all set there.
+      </span>
+    </section>
+
+    <section class="deployer__panel">
+      <span class="deployer__label">Verify source</span>
+      <span class="deployer__meta">
+        Submits the loaded contract's frozen standard-JSON input (./verification), with the constructor fields above, for the
+        address below on the connected chain. Sourcify needs no key and every Blockscout explorer imports its matches.
+      </span>
+      <label class="deployer__label" for="verifyAddress">Contract address</label>
+      <input id="verifyAddress" class="deployer__input" spellcheck="false" placeholder="prefilled from the prediction — paste another to verify an earlier deploy" />
+      <label class="deployer__label" for="etherscanKey">Etherscan API key (optional, kept in this browser)</label>
+      <input id="etherscanKey" class="deployer__input" spellcheck="false" placeholder="etherscan.io → API keys" />
+      <div class="deployer__row">
+        <button id="verifySourcifyBtn" class="deployer__button deployer__button--secondary">Verify on Sourcify</button>
+        <button id="verifyBlockscoutBtn" class="deployer__button deployer__button--secondary">Verify on this chain's Blockscout</button>
+        <button id="verifyEtherscanBtn" class="deployer__button deployer__button--secondary">Verify on Etherscan family</button>
+      </div>
+      <span id="verifyStatus" class="deployer__meta">—</span>
+    </section>
+
+    <section class="deployer__panel">
+      <span class="deployer__label">Log</span>
+      <div id="log" class="deployer__log"></div>
+    </section>
+  </main>
+
+  <script>
+    const FACTORY = "0x4e59b44847b379578588920cA78FbF26c0B4956C";
+
+    // Read-only fallbacks for eth_getCode when the wallet's RPC is rate-limited. Signing stays with the wallet.
+    const READ_RPCS = {
+      1: ["https://ethereum-rpc.publicnode.com", "https://eth.llamarpc.com"],
+      42: ["https://42.rpc.thirdweb.com", "https://rpc.mainnet.lukso.network"],
+      // arc-scan refuses eth_getCode, which is the one read this page needs
+      5042: ["https://rpc.mainnet.arc.io", "https://arc.drpc.org", "https://5042.rpc.thirdweb.com"],
+      5042002: ["https://rpc.testnet.arc.network"],
+      8453: ["https://base-rpc.publicnode.com", "https://mainnet.base.org"],
+      84532: ["https://base-sepolia-rpc.publicnode.com", "https://base-sepolia.drpc.org"],
+    };
+
+    // Fee bumps per chain; empty means every chain takes the defaults
+    const PRIORITY = {};
+
+    const CHAIN_NAMES = {
+      1: "Ethereum", 42: "LUKSO", 5042: "Arc", 5042002: "Arc Testnet", 8453: "Base", 84532: "Base Sepolia",
+    };
+
+    const CHAIN_SYMBOLS = { 1: "ETH", 42: "LYX", 5042: "USDC", 5042002: "USDC", 8453: "ETH", 84532: "ETH" };
+
+    const DEFAULT_SALT_LABEL = "readable";
+    const DEFAULT_SALT = ethers.id(DEFAULT_SALT_LABEL);
+
+    // Precompiled artifacts in ./artifacts, built by ../deploy/build-artifacts.mjs with ../foundry.toml
+    const ARTIFACTS = [
+      { id: "", label: "— pick a contract —" },
+      { group: "Readable", id: "Readable", label: "Readable (the name registry)", file: "Readable.json", source: "src/Readable.sol", signerArgs: ["initialOwner"] },
+      { group: "Readable", id: "NameRules", label: "NameRules (what a name may be made of)", file: "NameRules.json", source: "src/NameRules.sol" },
+    ];
+
+    // Known constructor values per chain; an empty entry falls back to signerArgs or stays blank
+    const CTOR_DEFAULTS = {
+      Readable: {
+        // Hup forwarders, rotatable with setTrustedForwarder
+        8453: ["", "0xae95e44D2642F568D0e0Fc0d60202B55c8764567"],
+        84532: ["", "0x18B86518709a6C0942F3adCD0CD528D1716e0A80"],
+        5042: ["", "0xc407722d150c8a65e890096869f8015D90a89EfD"],
+      },
+    };
+
+    const readProviderCache = new Map();
+
+    function readProvidersFor(chainId) {
+      if (!readProviderCache.has(chainId)) {
+        const urls = READ_RPCS[chainId] || [];
+        readProviderCache.set(
+          chainId,
+          urls.map((url) => {
+            // The staticNetwork option's shape has moved across ethers 6.x
+            try {
+              return new ethers.JsonRpcProvider(url, chainId, { staticNetwork: true });
+            } catch (err) {
+              return new ethers.JsonRpcProvider(url);
+            }
+          }),
+        );
+      }
+      return readProviderCache.get(chainId);
+    }
+
+    // The wallet first, then each fallback; throws only once every source has failed
+    async function readCode(address) {
+      const errors = [];
+      const sources = provider ? [provider, ...readProvidersFor(currentChainId)] : readProvidersFor(currentChainId);
+      for (const source of sources) {
+        try {
+          return await source.getCode(address);
+        } catch (err) {
+          errors.push(err.shortMessage || err.message || String(err));
+        }
+      }
+      throw new Error(errors.length ? errors.join("; ") : "no RPC available for this chain");
+    }
+
+    const stampDateFormat = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" });
+    const stampTimeFormat = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+
+    // Last-Modified in local time, so a .sol edited after the build is caught before a deploy
+    const artifactStamp = (lastModified) => {
+      if (!lastModified) return null;
+      const date = new Date(lastModified);
+      if (Number.isNaN(date.getTime())) return null;
+      return `${stampDateFormat.format(date)} ${stampTimeFormat.format(date)}`;
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const els = {
+      artifactSelect: byId("artifactSelect"),
+      loadArtifactBtn: byId("loadArtifactBtn"),
+      ctorFields: byId("ctorFields"),
+      artifactHint: byId("artifactHint"),
+      factoryAddr: byId("factoryAddr"),
+      connectBtn: byId("connectBtn"),
+      walletInfo: byId("walletInfo"),
+      factoryStatus: byId("factoryStatus"),
+      saltInput: byId("saltInput"),
+      saltLabelInput: byId("saltLabelInput"),
+      deriveSaltBtn: byId("deriveSaltBtn"),
+      defaultSaltBtn: byId("defaultSaltBtn"),
+      saltHint: byId("saltHint"),
+      bytecodeInput: byId("bytecodeInput"),
+      predictedAddr: byId("predictedAddr"),
+      targetStatus: byId("targetStatus"),
+      checkBtn: byId("checkBtn"),
+      deployBtn: byId("deployBtn"),
+      feeMode: byId("feeMode"),
+      verifyAddress: byId("verifyAddress"),
+      etherscanKey: byId("etherscanKey"),
+      verifySourcifyBtn: byId("verifySourcifyBtn"),
+      verifyBlockscoutBtn: byId("verifyBlockscoutBtn"),
+      verifyEtherscanBtn: byId("verifyEtherscanBtn"),
+      verifyStatus: byId("verifyStatus"),
+      log: byId("log"),
+    };
+
+    els.factoryAddr.textContent = FACTORY;
+    els.saltInput.value = DEFAULT_SALT;
+
+    let provider = null;
+    let currentChainId = null;
+    let signer = null;
+    let loadedArtifact = null;
+
+    function log(message, level) {
+      const line = document.createElement("div");
+      if (level) line.className = `deployer__log-line--${level}`;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      els.log.appendChild(line);
+      els.log.scrollTop = els.log.scrollHeight;
+    }
+
+    function normalizeHex(value) {
+      const hex = value.trim().replace(/\s+/g, "").replace(/^0x/i, "").toLowerCase();
+      return /^[0-9a-f]*$/.test(hex) ? `0x${hex}` : null;
+    }
+
+    function getInputs() {
+      const salt = normalizeHex(els.saltInput.value);
+      const initCode = normalizeHex(els.bytecodeInput.value);
+      if (!salt || salt.length !== 66) return { error: "Salt must be 32 bytes of hex" };
+      if (!initCode || initCode.length < 4 || initCode.length % 2 !== 0) {
+        return { error: "Init bytecode is empty or not valid hex" };
+      }
+      return { salt, initCode };
+    }
+
+    function updatePrediction() {
+      const { salt, initCode, error } = getInputs();
+      els.targetStatus.textContent = "—";
+      if (error) {
+        els.predictedAddr.textContent = error;
+        els.predictedAddr.className = "deployer__address deployer__address--err";
+        els.deployBtn.disabled = true;
+        return null;
+      }
+      const predicted = ethers.getCreate2Address(FACTORY, salt, ethers.keccak256(initCode));
+      els.predictedAddr.textContent = predicted;
+      els.predictedAddr.className = "deployer__address deployer__address--ok";
+      els.deployBtn.disabled = !signer;
+      els.verifyAddress.value = predicted;
+      return predicted;
+    }
+
+    async function refreshWalletInfo() {
+      const network = await provider.getNetwork();
+      const address = await signer.getAddress();
+      els.walletInfo.dataset.address = address;
+      currentChainId = Number(network.chainId);
+      const name = CHAIN_NAMES[currentChainId] || `chain ${currentChainId}`;
+      els.walletInfo.textContent = `${address.slice(0, 6)}…${address.slice(-4)} on ${name} (${currentChainId})`;
+      els.checkBtn.disabled = false;
+      els.deployBtn.disabled = !updatePrediction();
+      await checkChain();
+    }
+
+    async function connect() {
+      if (!window.ethereum) {
+        log("No wallet extension found (window.ethereum is missing).", "err");
+        return;
+      }
+      provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = await provider.getSigner();
+      window.ethereum.on("chainChanged", () => location.reload());
+      window.ethereum.on("accountsChanged", () => location.reload());
+      log("Wallet connected.");
+      await refreshWalletInfo();
+    }
+
+    async function checkChain() {
+      if (!provider) return;
+
+      // null = could not find out; only a definite "missing" blocks deploying
+      let factoryOk = null;
+      try {
+        factoryOk = (await readCode(FACTORY)) !== "0x";
+      } catch (err) {
+        log(`Could not read the factory: ${err.message}`, "warn");
+      }
+      els.factoryStatus.textContent =
+        factoryOk === null ? "⚠️ unknown — every RPC failed" : factoryOk ? "✅ deployed" : "❌ MISSING — cannot deterministic-deploy here";
+      if (factoryOk === false) log("CREATE2 factory is missing on this chain.", "err");
+
+      const predicted = updatePrediction();
+      if (!predicted) return;
+
+      let targetCode;
+      try {
+        targetCode = await readCode(predicted);
+      } catch (err) {
+        // The factory reverts on a taken address, so deploying blind can't clobber anything
+        els.targetStatus.textContent = "⚠️ unknown — every RPC failed";
+        els.deployBtn.disabled = factoryOk === false;
+        log(`Could not read the target address: ${err.message}`, "warn");
+        return;
+      }
+
+      if (targetCode !== "0x") {
+        els.targetStatus.textContent = "✅ contract already deployed at this address";
+        els.deployBtn.disabled = true;
+      } else {
+        els.targetStatus.textContent = "empty — ready to deploy";
+        els.deployBtn.disabled = factoryOk === false;
+      }
+    }
+
+    /**
+     * EIP-1559 fields by fee mode: auto uses the chain's PRIORITY bump or the wallet defaults,
+     * cheapest caps the tip at 5% of the base fee, priority multiplies the tip for the next block.
+     */
+    async function feeOverrides() {
+      const mode = els.feeMode.value;
+      if (!provider) return {};
+      if (mode === "auto" && !PRIORITY[currentChainId]) return {};
+      try {
+        const [fee, block] = await Promise.all([provider.getFeeData(), provider.getBlock("latest")]);
+        const base = block?.baseFeePerGas ?? null;
+        if (fee.maxFeePerGas == null || fee.maxPriorityFeePerGas == null || base == null) {
+          log("No EIP-1559 fee data on this chain — sending with the wallet's defaults.", "warn");
+          return {};
+        }
+
+        let tip;
+        let maxFee;
+        if (mode === "cheapest") {
+          tip = fee.maxPriorityFeePerGas;
+          const cap = base / 20n;
+          if (tip > cap) tip = cap;
+          maxFee = (base * 11n) / 10n + tip;
+        } else {
+          const bump = PRIORITY[currentChainId] || { tipMultiplier: 2n, minTipGwei: "0", feeMultiplier: 2n };
+          const minTip = ethers.parseUnits(bump.minTipGwei, "gwei");
+          tip = fee.maxPriorityFeePerGas * bump.tipMultiplier;
+          if (tip < minTip) tip = minTip;
+          maxFee = fee.maxFeePerGas * bump.feeMultiplier;
+          if (maxFee < tip * 2n) maxFee = tip * 2n;
+        }
+        log(`${mode} fee on ${CHAIN_NAMES[currentChainId] || currentChainId}: base ${ethers.formatUnits(base, "gwei")} gwei, tip ${ethers.formatUnits(tip, "gwei")} gwei, ceiling ${ethers.formatUnits(maxFee, "gwei")} gwei.`);
+        return { maxFeePerGas: maxFee, maxPriorityFeePerGas: tip };
+      } catch (err) {
+        log(`Could not estimate fees (${err.message}) — sending with the wallet's defaults.`, "warn");
+        return {};
+      }
+    }
+
+    async function logCostEstimate(to, data, overrides) {
+      try {
+        const [gas, block, fee] = await Promise.all([provider.estimateGas({ to, data }), provider.getBlock("latest"), provider.getFeeData()]);
+        const symbol = CHAIN_SYMBOLS[currentChainId] || "native";
+        const base = block?.baseFeePerGas ?? null;
+        const ceiling = overrides.maxFeePerGas ?? fee.maxFeePerGas ?? fee.gasPrice;
+        const tip = overrides.maxPriorityFeePerGas ?? fee.maxPriorityFeePerGas ?? 0n;
+        const charged = base != null ? base + tip : ceiling;
+        const fmt = (wei) => Number(ethers.formatEther(wei)).toPrecision(3);
+        log(`Estimated gas ${gas.toLocaleString()} → about ${fmt(gas * charged)} ${symbol} at today's base fee (ceiling ${fmt(gas * ceiling)} ${symbol}).`);
+      } catch (err) {
+        log(`Could not estimate the cost (${err.message}).`, "warn");
+      }
+    }
+
+    async function deploy() {
+      const { salt, initCode, error } = getInputs();
+      if (error) { log(error, "err"); return; }
+      const predicted = updatePrediction();
+      if (!predicted) return;
+      const data = ethers.concat([salt, initCode]);
+
+      try {
+        els.deployBtn.disabled = true;
+        log(`Deploying to ${predicted} via the factory...`);
+        const overrides = await feeOverrides();
+        await logCostEstimate(FACTORY, data, overrides);
+        const tx = await signer.sendTransaction({ to: FACTORY, data, ...overrides });
+        log(`Tx sent: ${tx.hash} — waiting for confirmation...`);
+        const receipt = await tx.wait();
+        if (receipt.status !== 1) {
+          log("Transaction reverted.", "err");
+          return;
+        }
+        // The receipt succeeded; a failed read-back means the RPC is down, not the deploy
+        try {
+          const code = await readCode(predicted);
+          if (code !== "0x") log(`✅ Deployed in block ${receipt.blockNumber}! Code confirmed at ${predicted}`, "ok");
+          else log("Tx succeeded but no code at predicted address — check salt/bytecode.", "warn");
+        } catch (err) {
+          log(`✅ Tx confirmed in block ${receipt.blockNumber}. Could not read back the code (${err.message}) — check ${predicted} on the explorer.`, "ok");
+        }
+        log("Next: put this address in the site's NEXT_PUBLIC_READABLE_ADDRESS and set the registry up on /admin.");
+        await checkChain();
+      } catch (err) {
+        log(err.shortMessage || err.message, "err");
+        els.deployBtn.disabled = false;
+      }
+    }
+
+    // --- Source verification ---
+
+    const COMPILER_LONG = "0.8.36+commit.8a079791";
+    const VERIFY_BASE = "./verification/";
+    // Blockscout explorers with a verification API; Sourcify covers the rest
+    const BLOCKSCOUT = {
+      8453: "https://base.blockscout.com",
+    };
+    const ETHERSCAN_KEY_STORAGE = "readable-deploy-etherscan-key";
+
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const setVerifyStatus = (text) => {
+      els.verifyStatus.textContent = text;
+    };
+
+    function encodedCtorArgs() {
+      const fields = [...els.ctorFields.querySelectorAll("input")];
+      const types = fields.map((field) => field.dataset.type);
+      const values = fields.map((field) => coerceArg(field.value, field.dataset.type));
+      return types.length ? ethers.AbiCoder.defaultAbiCoder().encode(types, values).slice(2) : "";
+    }
+
+    function verifyTarget() {
+      if (!loadedArtifact) throw new Error("Pick and load a precompiled contract first — the source to verify is chosen from it.");
+      if (!currentChainId) throw new Error("Connect the wallet first — the chain decides where to verify.");
+      return {
+        address: ethers.getAddress(els.verifyAddress.value.trim()),
+        identifier: `${loadedArtifact.source}:${loadedArtifact.id}`,
+        args: encodedCtorArgs(),
+      };
+    }
+
+    async function verificationInput() {
+      const response = await fetch(`${VERIFY_BASE}${loadedArtifact.id}.json`);
+      if (!response.ok) throw new Error(`No verification file for ${loadedArtifact.id} — run deploy/build-artifacts.mjs.`);
+      return response.json();
+    }
+
+    const verifyFailed = (where, err) => {
+      setVerifyStatus(`${where}: ${err.message}`);
+      log(`${where}: ${err.message}`, "err");
+    };
+
+    async function verifyOnSourcify() {
+      try {
+        const { address, identifier } = verifyTarget();
+        const input = await verificationInput();
+        setVerifyStatus("Submitting to Sourcify…");
+        const response = await fetch(`https://sourcify.dev/server/v2/verify/${currentChainId}/${address}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ stdJsonInput: input, compilerVersion: COMPILER_LONG, contractIdentifier: identifier }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (response.status === 409) {
+          setVerifyStatus(`Sourcify already holds this contract — https://repo.sourcify.dev/${currentChainId}/${address}`);
+          log(`Sourcify already has ${address} verified.`, "ok");
+          return;
+        }
+        if (!response.ok) throw new Error(body.customCode ? `${body.customCode} — ${body.message}` : body.message || `HTTP ${response.status}`);
+
+        for (let i = 1; i <= 40; i++) {
+          await wait(3000);
+          const job = await fetch(`https://sourcify.dev/server/v2/verify/${body.verificationId}`).then((r) => r.json());
+          if (!job.isJobCompleted) {
+            setVerifyStatus(`Sourcify is compiling… ${i * 3}s`);
+            continue;
+          }
+          if (job.error) throw new Error(`${job.error.customCode || ""} ${job.error.message || JSON.stringify(job.error)}`.trim());
+          const match = job.contract?.match || job.contract?.runtimeMatch || "verified";
+          setVerifyStatus(`Sourcify: ${match} — https://repo.sourcify.dev/${currentChainId}/${address}`);
+          log(`✅ Sourcify ${match}: ${loadedArtifact.id} at ${address}`, "ok");
+          return;
+        }
+        throw new Error(`no result after two minutes — check https://sourcify.dev/#/lookup/${address}`);
+      } catch (err) {
+        verifyFailed("Sourcify", err);
+      }
+    }
+
+    async function verifyOnBlockscout() {
+      try {
+        const base = BLOCKSCOUT[currentChainId];
+        if (!base) throw new Error("no Blockscout explorer configured for this chain — Sourcify covers it.");
+        const { address, args } = verifyTarget();
+        const input = await verificationInput();
+        const form = new FormData();
+        form.append("compiler_version", `v${COMPILER_LONG}`);
+        form.append("license_type", "mit");
+        form.append("autodetect_constructor_args", args ? "false" : "true");
+        if (args) form.append("constructor_args", args);
+        form.append("files[0]", new Blob([JSON.stringify(input)], { type: "application/json" }), `${loadedArtifact.id}.json`);
+        setVerifyStatus("Submitting to Blockscout…");
+        const response = await fetch(`${base}/api/v2/smart-contracts/${address}/verification/via/standard-input`, { method: "POST", body: form });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.message || `HTTP ${response.status}`);
+
+        for (let i = 1; i <= 40; i++) {
+          await wait(3000);
+          const info = await fetch(`${base}/api/v2/smart-contracts/${address}`).then((r) => r.json()).catch(() => null);
+          if (info?.is_verified) {
+            setVerifyStatus(`Blockscout: verified as ${info.name} — ${base}/address/${address}?tab=contract`);
+            log(`✅ Blockscout verified ${info.name} at ${address}`, "ok");
+            return;
+          }
+          setVerifyStatus(`Blockscout is verifying… ${i * 3}s`);
+        }
+        throw new Error(`no confirmation after two minutes — check ${base}/address/${address}?tab=contract`);
+      } catch (err) {
+        verifyFailed("Blockscout", err);
+      }
+    }
+
+    async function verifyOnEtherscan() {
+      try {
+        const key = els.etherscanKey.value.trim();
+        if (!key) throw new Error("paste an Etherscan API key first — free at etherscan.io/apis.");
+        try {
+          localStorage.setItem(ETHERSCAN_KEY_STORAGE, key);
+        } catch {
+          // Storage blocked; the key is typed per session
+        }
+        const { address, identifier, args } = verifyTarget();
+        const input = await verificationInput();
+        const params = new URLSearchParams({
+          apikey: key,
+          module: "contract",
+          action: "verifysourcecode",
+          codeformat: "solidity-standard-json-input",
+          sourceCode: JSON.stringify(input),
+          contractaddress: address,
+          contractname: identifier,
+          compilerversion: `v${COMPILER_LONG}`,
+          // Their spelling, not a typo here
+          constructorArguements: args,
+        });
+        setVerifyStatus("Submitting to the Etherscan API…");
+        const submit = await fetch(`https://api.etherscan.io/v2/api?chainid=${currentChainId}`, { method: "POST", body: params }).then((r) => r.json());
+        if (submit.status !== "1") {
+          if (/already verified/i.test(String(submit.result))) {
+            setVerifyStatus(`Etherscan: ${submit.result}`);
+            log(`Etherscan: ${submit.result} (${address})`, "ok");
+            return;
+          }
+          throw new Error(submit.result || submit.message || "submission rejected");
+        }
+
+        for (let i = 1; i <= 36; i++) {
+          await wait(5000);
+          const check = await fetch(
+            `https://api.etherscan.io/v2/api?chainid=${currentChainId}&module=contract&action=checkverifystatus&guid=${submit.result}&apikey=${key}`,
+          ).then((r) => r.json());
+          const text = String(check.result || "");
+          if (/pending/i.test(text)) {
+            setVerifyStatus(`Etherscan: ${text} ${i * 5}s`);
+            continue;
+          }
+          if (/pass|already verified/i.test(text)) {
+            setVerifyStatus(`Etherscan: ${text}`);
+            log(`✅ Etherscan: ${text} — ${loadedArtifact.id} at ${address}`, "ok");
+            return;
+          }
+          throw new Error(text || "verification failed");
+        }
+        throw new Error("no result after three minutes — check the explorer's contract tab.");
+      } catch (err) {
+        verifyFailed("Etherscan", err);
+      }
+    }
+
+    // --- Precompiled artifact picker ---
+
+    const artifactGroups = new Map();
+    for (const entry of ARTIFACTS) {
+      const option = document.createElement("option");
+      option.value = entry.id;
+      option.textContent = entry.label;
+      if (!entry.group) {
+        els.artifactSelect.appendChild(option);
+        continue;
+      }
+      if (!artifactGroups.has(entry.group)) {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = entry.group;
+        artifactGroups.set(entry.group, optgroup);
+        els.artifactSelect.appendChild(optgroup);
+      }
+      artifactGroups.get(entry.group).appendChild(option);
+    }
+
+    // HEAD costs headers only; dates each option by its artifact's mtime
+    async function stampArtifactOptions() {
+      await Promise.all(
+        ARTIFACTS.filter((entry) => entry.file).map(async (entry) => {
+          try {
+            const response = await fetch(`./artifacts/${entry.file}`, { method: "HEAD" });
+            if (!response.ok) return;
+            const stamp = artifactStamp(response.headers.get("Last-Modified"));
+            if (!stamp) return;
+            entry.stamp = stamp;
+            const option = els.artifactSelect.querySelector(`option[value="${entry.id}"]`);
+            if (option) option.textContent = `${entry.label} · bytecode ${stamp}`;
+          } catch {
+            // Served over file://, or no Last-Modified
+          }
+        }),
+      );
+    }
+
+    async function selectArtifact(id) {
+      els.ctorFields.replaceChildren();
+      loadedArtifact = null;
+
+      if (!id) {
+        els.artifactHint.textContent = "Pick a contract to fill its constructor arguments.";
+        return;
+      }
+
+      const entry = ARTIFACTS.find((item) => item.id === id);
+      try {
+        const response = await fetch(`./artifacts/${entry.file}`);
+        if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+        const stamp = artifactStamp(response.headers.get("Last-Modified")) ?? entry.stamp ?? null;
+        loadedArtifact = { ...entry, stamp, ...(await response.json()) };
+      } catch (err) {
+        // file:// blocks fetch — XAMPP serves htdocs over http
+        els.artifactHint.textContent = `Could not read the artifact (${err.message}). Open this page over http:// rather than file://.`;
+        log(`Artifact load failed: ${err.message}`, "err");
+        return;
+      }
+
+      const inputs = (loadedArtifact.abi ?? []).find((item) => item.type === "constructor")?.inputs ?? [];
+      const defaults = (currentChainId && CTOR_DEFAULTS[id]?.[currentChainId]) || [];
+      const signerAddress = signer ? await signer.getAddress() : "";
+
+      inputs.forEach((input, index) => {
+        const label = document.createElement("label");
+        const caption = document.createElement("span");
+        caption.textContent = `${input.name || `arg${index}`} · ${input.type}`;
+        const field = document.createElement("input");
+        field.className = "deployer__input";
+        field.spellcheck = false;
+        field.dataset.type = input.type;
+        field.placeholder = input.type === "address" ? "0x…" : input.type.endsWith("[]") ? `${input.type} — comma-separated` : input.type;
+        const prefillSigner = entry.signerArgs?.includes(input.name) && !defaults[index];
+        field.value = (prefillSigner ? signerAddress : defaults[index]) ?? "";
+        if (prefillSigner) caption.textContent += signerAddress ? " · connected wallet" : " · connect a wallet to prefill";
+        field.addEventListener("input", () => {
+          els.artifactHint.textContent = "Arguments changed — press Load bytecode again.";
+        });
+        label.append(caption, field);
+        els.ctorFields.appendChild(label);
+      });
+
+      const stampNote = loadedArtifact.stamp ? ` Bytecode compiled ${loadedArtifact.stamp}.` : "";
+      els.artifactHint.textContent =
+        (inputs.length
+          ? `${loadedArtifact.contractName}: fill the ${inputs.length} constructor argument${inputs.length > 1 ? "s" : ""}, then press Load bytecode.`
+          : `${loadedArtifact.contractName}: no constructor arguments — press Load bytecode.`) + stampNote;
+    }
+
+    // Text in, ABI value out, for the types these constructors use
+    function coerceArg(raw, type) {
+      const value = raw.trim();
+      if (type.endsWith("[]")) {
+        const element = type.slice(0, -2);
+        return value ? value.split(",").map((item) => coerceArg(item, element)) : [];
+      }
+      if (type.startsWith("uint") || type.startsWith("int")) return BigInt(value || "0");
+      if (type === "bool") return value === "true" || value === "1";
+      return value;
+    }
+
+    function loadArtifactBytecode() {
+      if (!loadedArtifact) {
+        log("Pick a contract first.", "warn");
+        return;
+      }
+      try {
+        // Constructor arguments are part of the init code, so each argument set has its own address
+        const encoded = encodedCtorArgs();
+        els.bytecodeInput.value = `${loadedArtifact.bytecode}${encoded}`;
+        const count = els.ctorFields.querySelectorAll("input").length;
+        els.artifactHint.textContent =
+          `${loadedArtifact.contractName} loaded with ${count} argument${count === 1 ? "" : "s"}.` +
+          (loadedArtifact.stamp ? ` Bytecode compiled ${loadedArtifact.stamp}.` : "");
+        updatePrediction();
+        log(`Loaded ${loadedArtifact.contractName} init code (${(els.bytecodeInput.value.length - 2) / 2} bytes).`);
+        if (provider) checkChain().catch((e) => log(e.message, "err"));
+      } catch (err) {
+        log(`Could not encode constructor arguments: ${err.shortMessage || err.message}`, "err");
+      }
+    }
+
+    els.artifactSelect.addEventListener("change", (e) => selectArtifact(e.target.value));
+    els.loadArtifactBtn.addEventListener("click", loadArtifactBytecode);
+    els.connectBtn.addEventListener("click", () => connect().catch((e) => log(e.message, "err")));
+    els.checkBtn.addEventListener("click", () => checkChain().catch((e) => log(e.message, "err")));
+    els.deployBtn.addEventListener("click", deploy);
+    els.saltInput.addEventListener("input", () => {
+      els.saltHint.textContent = normalizeHex(els.saltInput.value) === DEFAULT_SALT ? "Using the default salt." : "Custom salt — note where it came from.";
+      updatePrediction();
+    });
+    els.bytecodeInput.addEventListener("input", updatePrediction);
+    els.verifySourcifyBtn.addEventListener("click", verifyOnSourcify);
+    els.verifyBlockscoutBtn.addEventListener("click", verifyOnBlockscout);
+    els.verifyEtherscanBtn.addEventListener("click", verifyOnEtherscan);
+    try {
+      els.etherscanKey.value = localStorage.getItem(ETHERSCAN_KEY_STORAGE) || "";
+    } catch {
+      // Storage blocked; the key is typed per session
+    }
+
+    els.deriveSaltBtn.addEventListener("click", () => {
+      const label = els.saltLabelInput.value.trim();
+      if (!label) { log("Type a label to derive the salt from.", "warn"); return; }
+      els.saltInput.value = ethers.id(label);
+      els.saltHint.textContent = `Salt = keccak256("${label}") — keep the label with the deployment notes.`;
+      log(`Salt derived from "${label}": ${els.saltInput.value}`);
+      updatePrediction();
+      if (provider) checkChain().catch((e) => log(e.message, "err"));
+    });
+
+    els.defaultSaltBtn.addEventListener("click", () => {
+      els.saltLabelInput.value = "";
+      els.saltInput.value = DEFAULT_SALT;
+      els.saltHint.textContent = `Using the default salt, keccak256("${DEFAULT_SALT_LABEL}").`;
+      updatePrediction();
+      if (provider) checkChain().catch((e) => log(e.message, "err"));
+    });
+
+    updatePrediction();
+    stampArtifactOptions();
+  </script>
+</body>
+</html>

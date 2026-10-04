@@ -1,0 +1,188 @@
+@use '../../styles/mixins' as *;
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 26rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-chat-wallpaper);
+  background-image: radial-gradient(var(--color-chat-pattern) 1px, transparent 1px);
+  background-size: var(--space-3) var(--space-3);
+  box-shadow: var(--shadow-lg);
+  text-align: start;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: linear-gradient(to bottom, var(--color-chat-header), var(--color-chat-header-end));
+    color: var(--color-chat-on-header);
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-chat-on-header) 22%, transparent);
+    font-weight: var(--weight-semibold);
+  }
+
+  &__contact {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    line-height: 1.3;
+  }
+
+  &__name {
+    font-weight: var(--weight-semibold);
+  }
+
+  &__status {
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--color-chat-on-header) 75%, transparent);
+  }
+
+  &__tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    color: color-mix(in srgb, var(--color-chat-on-header) 75%, transparent);
+  }
+
+  &__thread {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-5) var(--space-6);
+  }
+
+  &__row {
+    position: relative;
+    display: flex;
+
+    &--me {
+      justify-content: flex-end;
+    }
+
+    &--system {
+      justify-content: center;
+    }
+
+    // The first message of a run stands apart from the run before it
+    &--lead {
+      margin-top: var(--space-3);
+    }
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-chat-in) 85%, transparent);
+    box-shadow: var(--shadow-sm);
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--color-chat-on-in) 70%, transparent);
+
+    &--pending {
+      opacity: 0;
+    }
+  }
+
+  &__bubble {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+    max-width: 85%;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-chat-in);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-chat-on-in);
+    line-height: 1.4;
+
+    &--me {
+      background: var(--color-chat-out);
+      color: var(--color-chat-on-out);
+    }
+
+    // A run's first bubble points at its sender: a square corner with a tail beside it
+    &--lead {
+      border-start-start-radius: 0;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        inset-inline-end: 100%;
+        width: var(--space-2);
+        height: var(--space-3);
+        background: inherit;
+        clip-path: polygon(0 0, 100% 0, 100% 100%);
+      }
+    }
+
+    &--me#{&}--lead {
+      border-start-start-radius: var(--radius-md);
+      border-start-end-radius: 0;
+
+      &::before {
+        inset-inline: 100% auto;
+        clip-path: polygon(0 0, 100% 0, 0 100%);
+      }
+    }
+
+    // Holds its place in the thread, so nothing below moves when it arrives
+    &--pending {
+      opacity: 0;
+    }
+  }
+
+  &__sender {
+    @include visually-hidden;
+  }
+
+  &__text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+
+    // A number is never broken across lines
+    &--number {
+      white-space: nowrap;
+    }
+  }
+
+  &__ticks {
+    flex-shrink: 0;
+    color: var(--color-chat-tick);
+    transition: color var(--duration) ease;
+
+    &--read {
+      color: var(--color-chat-read);
+    }
+  }
+
+  // Sits where the reply it announces will land
+  &__typing {
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-chat-in);
+    box-shadow: var(--shadow-sm);
+    color: color-mix(in srgb, var(--color-chat-on-in) 55%, transparent);
+  }
+}

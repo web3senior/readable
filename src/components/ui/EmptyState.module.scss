@@ -1,0 +1,50 @@
+.empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  line-height: 1.55;
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+
+  &--sm {
+    font-size: var(--text-xs);
+  }
+
+  &--md {
+    font-size: var(--text-sm);
+  }
+
+  &--lg {
+    padding: var(--space-6) 0;
+    font-size: var(--text-md);
+  }
+
+  &--start {
+    justify-content: flex-start;
+    text-align: start;
+  }
+
+  &--center {
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  &__text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__action {
+    margin-inline-start: auto;
+  }
+
+  &--center &__action {
+    margin-inline-start: 0;
+  }
+}

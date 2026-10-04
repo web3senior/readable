@@ -1,0 +1,89 @@
+@use '../../styles/mixins' as *;
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  // The label reads first; the control comes first in the DOM so it can be styled by its state
+  &__label {
+    order: -1;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+  }
+
+  &__control {
+    width: 100%;
+    min-height: 2.625rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-muted);
+    font-size: var(--text-md);
+    color: var(--color-text);
+    transition:
+      border-color var(--duration-fast) ease,
+      background-color var(--duration-fast) ease,
+      box-shadow var(--duration-fast) ease;
+
+    &::placeholder {
+      color: var(--color-text-subtle);
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-border-strong);
+    }
+
+    &:focus {
+      @include focus-ring;
+      border-color: var(--color-accent-line);
+      background: var(--color-surface);
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    &--mono {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+    }
+
+    &--multiline {
+      min-height: 5rem;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    &--check {
+      width: 1.125rem;
+      height: 1.125rem;
+      min-height: 0;
+      padding: 0;
+      accent-color: var(--color-accent);
+    }
+  }
+
+  &--check {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  &--check &__label {
+    order: 0;
+    color: var(--color-text);
+  }
+
+  &--check &__hint {
+    flex-basis: 100%;
+  }
+
+  &__hint {
+    font-size: var(--text-xs);
+    color: var(--color-text-subtle);
+  }
+}

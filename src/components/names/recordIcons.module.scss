@@ -1,0 +1,8 @@
+// A logo file painted in the ink of the row it sits in
+.mark {
+  display: inline-block;
+  width: 1.125rem;
+  height: 1.125rem;
+  background: currentColor;
+  mask: var(--mark) center / contain no-repeat;
+}

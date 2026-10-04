@@ -1,0 +1,14 @@
+.qr {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+
+  &__plate {
+    fill: var(--color-qr-plate);
+  }
+
+  &__ink {
+    fill: var(--color-qr-ink);
+  }
+}

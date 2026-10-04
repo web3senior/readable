@@ -1,0 +1,200 @@
+@use '../../styles/mixins' as *;
+
+// A name's page in one column: its status and the name itself, then what it costs or who
+// holds it, then the way to get it
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  &__badges {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    max-width: 100%;
+  }
+
+  &__name {
+    min-width: 0;
+    font-size: var(--text-display);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  &__meta {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+
+  &__keypad {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-accent-text);
+  }
+
+  // Two buttons sharing a row equally; a button keeps its size elsewhere
+  &__pair {
+    display: flex;
+    gap: var(--space-2);
+
+    > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+
+  // Free numbers beside a taken one; picking one searches for it
+  &__nearby {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  &__nearby-label {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+
+  &__suggestion {
+    @include reset-button;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--color-success-soft);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-success);
+    transition: background-color var(--duration-fast) ease;
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-success) 14%, var(--color-success-soft));
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  // A holder's own name: its page, then a renewal
+  &__owned {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface-muted);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  &__term {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+
+  &__value {
+    min-width: 0;
+    font-weight: var(--weight-semibold);
+    text-align: end;
+  }
+
+  &__identity {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: 100%;
+  }
+
+  &__identity-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__price {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+  }
+
+  &__per {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    color: var(--color-text-muted);
+  }
+
+  // The dollar value, under the price in ETH
+  &__usd {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    color: var(--color-text-muted);
+  }
+
+  // Set apart from the rows above it by a rule
+  &__note {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  &__message {
+    justify-content: center;
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface-muted);
+  }
+
+  &__skeleton-panel {
+    height: 8.5rem;
+    border-radius: var(--radius-xl);
+  }
+
+  &__skeleton-button {
+    height: 3.125rem;
+    border-radius: var(--radius-pill);
+  }
+
+  &__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+  }
+}

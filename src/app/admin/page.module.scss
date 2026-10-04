@@ -1,0 +1,38 @@
+@use '../../styles/mixins' as *;
+
+.page {
+  flex: 1;
+  padding: var(--space-10) 0 var(--space-16);
+
+  @include from('md') {
+    padding-top: var(--space-12);
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-gutter);
+  }
+
+  &__intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__title {
+    font-size: var(--text-display);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  &__subtitle {
+    max-width: 60ch;
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+}

@@ -1,0 +1,127 @@
+// The two palettes, as mixins: the themes apply them to the page, and a part of the page that
+// keeps one look in either theme (the How it works stage, always dark) includes one itself.
+
+@mixin light-palette {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f4f6f9;
+  --color-surface-sunken: #eceff4;
+  --color-border: #e3e7ee;
+  --color-border-strong: #cdd4de;
+  --color-text: #0f1419;
+  --color-text-muted: #566070;
+  --color-text-subtle: #8a94a3;
+
+  // The brand blue, Telegram's, the same in light and dark, with dark ink as on the NFT and the
+  // icon (7.2:1; white ink would be 2.6:1). Hover is the deeper end of Telegram's own gradient
+  // (6.1:1). On white the blue itself is 2.6:1, so it is a fill only: a line or an icon in the
+  // accent takes a deeper shade that clears 3:1 on white and on the soft fill (3.5:1), and text
+  // a deeper one still that clears 4.5:1 on both (5:1)
+  --color-accent: #2aabee;
+  --color-accent-hover: #229ed9;
+  --color-accent-soft: #e8f5fd;
+  --color-accent-line: #1088c6;
+  --color-accent-text: #0d6ea1;
+  --color-on-accent: #0f1419;
+
+  --color-success: #15803d;
+  --color-success-soft: #e6f6eb;
+  --color-danger: #c62828;
+  --color-danger-soft: #fdecec;
+  --color-warning: #b45309;
+  --color-warning-soft: #fdf3e2;
+
+  // The home page chat wears a messenger's bright green with white ink, as its app icon does,
+  // not the site's accent. The sent bubble is a deeper green, so that its white text reads (3:1)
+  --color-chat-wallpaper: #dcf5e1;
+  --color-chat-pattern: rgba(16, 122, 45, 0.18);
+  --color-chat-header: #3ce25b;
+  --color-chat-header-end: #1ec940;
+  --color-chat-on-header: #ffffff;
+  --color-chat-in: #ffffff;
+  --color-chat-on-in: #111b21;
+  --color-chat-out: #1fab4f;
+  --color-chat-on-out: #ffffff;
+  --color-chat-tick: rgba(255, 255, 255, 0.65);
+  --color-chat-read: #a8e6ff;
+
+  --color-backdrop: rgba(15, 20, 25, 0.45);
+  --color-glint: rgba(15, 23, 42, 0.06);
+
+  // A QR code is dark on light in either theme, which every scanner reads
+  --color-qr-ink: #0f1419;
+  --color-qr-plate: #ffffff;
+
+  // Four lights, the same in light and dark: the glow around the phones of How it works
+  // (`--shadow-glow`) and the Solana mark on one of them
+  --color-light-violet: #a66bff;
+  --color-light-pink: #f07cff;
+  --color-light-green: #2bf08a;
+  --color-light-cyan: #4fd8ff;
+
+  --shadow-sm: 0 1px 2px rgba(15, 20, 25, 0.05);
+  --shadow-md: 0 1px 2px rgba(15, 20, 25, 0.04), 0 8px 24px rgba(15, 20, 25, 0.07);
+  --shadow-lg: 0 2px 6px rgba(15, 20, 25, 0.06), 0 20px 48px rgba(15, 20, 25, 0.12);
+
+  color-scheme: light;
+}
+
+@mixin dark-palette {
+  --color-bg: #0b0e13;
+  --color-surface: #12161d;
+  --color-surface-muted: #181d26;
+  --color-surface-sunken: #1f2531;
+  --color-border: #ffffff14;
+  --color-border-strong: #ffffff26;
+  --color-text: #eef2f7;
+  --color-text-muted: #a3adbb;
+  --color-text-subtle: #737d8c;
+
+  // The accent itself reads on the dark surfaces (6:1 and up, the soft fill included), so
+  // lines and text need no other shade
+  --color-accent: #2aabee;
+  --color-accent-hover: #5cc0f2;
+  --color-accent-soft: #0a2333;
+  --color-accent-line: #2aabee;
+  --color-accent-text: #2aabee;
+  --color-on-accent: #0f1419;
+
+  --color-success: #4ade80;
+  --color-success-soft: #0f2a1a;
+  --color-danger: #f87171;
+  --color-danger-soft: #2d1414;
+  --color-warning: #fbbf24;
+  --color-warning-soft: #2b2110;
+
+  // The same green in the dark: it is the chat's identity
+  --color-chat-wallpaper: #0b1f12;
+  --color-chat-pattern: rgba(255, 255, 255, 0.06);
+  --color-chat-header: #3ce25b;
+  --color-chat-header-end: #1ec940;
+  --color-chat-on-header: #ffffff;
+  --color-chat-in: #202c33;
+  --color-chat-on-in: #e9edef;
+  --color-chat-out: #1fab4f;
+  --color-chat-on-out: #ffffff;
+  --color-chat-tick: rgba(255, 255, 255, 0.65);
+  --color-chat-read: #a8e6ff;
+
+  --color-backdrop: rgba(0, 0, 0, 0.6);
+  --color-glint: rgba(255, 255, 255, 0.07);
+
+  // A QR code is dark on light in either theme, which every scanner reads
+  --color-qr-ink: #0f1419;
+  --color-qr-plate: #ffffff;
+
+  // The same four lights in the dark
+  --color-light-violet: #a66bff;
+  --color-light-pink: #f07cff;
+  --color-light-green: #2bf08a;
+  --color-light-cyan: #4fd8ff;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.5), 0 20px 48px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}

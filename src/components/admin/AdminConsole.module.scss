@@ -1,0 +1,60 @@
+@use '../../styles/mixins' as *;
+
+.console {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+
+  &__banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+  }
+
+  &__gate {
+    flex: 1;
+    min-width: 12rem;
+    font-size: var(--text-sm);
+    color: var(--color-text);
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  &__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  &__title {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+
+    @include from('md') {
+      grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    }
+  }
+
+  &__skeleton {
+    height: 14rem;
+    border-radius: var(--radius-xl);
+  }
+}

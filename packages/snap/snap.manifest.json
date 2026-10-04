@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0",
+  "description": "Send to a readable.name number or name: +0 4242 1230 resolves to the wallet it points to.",
+  "proposedName": "Readable",
+  "source": {
+    "shasum": "r2aufUycrbzszcESppdyv4ot5gWpH/41kX/ADVeH9AU=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "iconPath": "images/icon.svg",
+        "packageName": "readable-snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "endowment:name-lookup": {
+      "chains": [
+        "eip155:1",
+        "eip155:8453",
+        "eip155:84532",
+        "eip155:10",
+        "eip155:42161",
+        "eip155:137",
+        "eip155:56"
+      ]
+    },
+    "endowment:network-access": {}
+  },
+  "platformVersion": "12.0.1",
+  "manifestVersion": "0.1"
+}

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "readable-sdk": ["./packages/sdk/src/index.js"]
+    }
+  }
+}

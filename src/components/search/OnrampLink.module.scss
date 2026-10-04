@@ -1,0 +1,12 @@
+.onramp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+
+  &__note {
+    font-size: var(--text-xs);
+    color: var(--color-text-subtle);
+  }
+}

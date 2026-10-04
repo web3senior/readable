@@ -1,0 +1,158 @@
+.next-toast {
+  // Resets the UA [popover] box so the top-layer promotion changes nothing visually
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+  color: inherit;
+  pointer-events: none;
+
+  &[data-position^='top'] {
+    --anchor-top: calc(var(--header-height) + var(--space-2));
+    --shift: 0.75rem;
+    --origin: center top;
+  }
+
+  &[data-position^='bottom'] {
+    --anchor-bottom: var(--space-4);
+    --shift: -0.75rem;
+    --origin: center bottom;
+  }
+
+  &[data-position$='left'] {
+    --anchor-left: var(--space-4);
+  }
+
+  &[data-position$='right'] {
+    --anchor-right: var(--space-4);
+  }
+}
+
+.toast {
+  position: absolute;
+  top: var(--anchor-top, auto);
+  bottom: var(--anchor-bottom, auto);
+  left: var(--anchor-left, auto);
+  right: var(--anchor-right, auto);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(22rem, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  pointer-events: auto;
+
+  // --y/--s are the resting place in the stack; the expanded state reads them. Entrance and
+  // exit are cube-motion's rise and leave (NextToast.jsx), which move `translate`, not this
+  --y: calc(var(--stack-index, 0) * var(--shift, -0.75rem));
+  --s: calc(1 - var(--stack-index, 0) * 0.05);
+  transform: translateY(var(--y)) scale(var(--s));
+  transform-origin: var(--origin, center bottom);
+  transition:
+    transform 250ms var(--ease),
+    opacity 250ms var(--ease);
+
+  &__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__message {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__close {
+    display: inline-flex;
+    flex-shrink: 0;
+    padding: var(--space-1);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: inherit;
+    opacity: 0;
+    transition:
+      opacity var(--duration-fast) ease,
+      background-color var(--duration-fast) ease;
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+
+    &:hover,
+    &:focus-visible {
+      opacity: 1;
+      background: var(--color-surface-muted);
+    }
+  }
+
+  &:hover &__close {
+    opacity: 0.6;
+  }
+
+  &--success .toast__icon {
+    color: var(--color-success);
+  }
+
+  &--danger .toast__icon {
+    color: var(--color-danger);
+  }
+
+  &--warning .toast__icon {
+    color: var(--color-warning);
+  }
+
+  &--info .toast__icon {
+    color: var(--color-accent-line);
+  }
+
+  // Past the visible stack: faded, but the slot is kept so nothing jumps on expiry
+  &--buried {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  // Leaving: it takes no clicks while cube's leave fades it
+  &--exit {
+    pointer-events: none;
+  }
+}
+
+// A hovered stack fans out into a list at full scale
+.next-toast--expanded {
+  .toast {
+    --y: var(--expand-offset, 0px);
+    --s: 1;
+
+    // Bridges the gap between rows so moving between toasts never collapses the stack
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -0.75rem 0;
+      z-index: -1;
+    }
+  }
+
+  .toast--buried {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

@@ -1,0 +1,121 @@
+.namespace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+
+  &--paused {
+    border-color: var(--color-warning);
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__badges {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  &__name {
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  &__meta {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+
+  &__rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  &__term {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+
+  &__mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  &__tiers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+  }
+
+  &__tier {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    font-size: var(--text-sm);
+  }
+
+  &__length {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  &__price {
+    font-weight: var(--weight-semibold);
+  }
+
+  &__pending {
+    width: 2.5rem;
+    height: 1em;
+  }
+
+  &__reserved {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__label {
+    padding: var(--space-1) var(--space-3);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: auto;
+  }
+}

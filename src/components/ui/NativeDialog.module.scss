@@ -1,0 +1,50 @@
+.dialog {
+  // The global reset wipes the UA margin that centers a modal dialog
+  margin: auto;
+  border: 0;
+  color: var(--color-text);
+  opacity: 0;
+  transform: translateY(2px);
+  // Pins the compositor layer so the centered dialog never hops a subpixel on hover repaints
+  will-change: transform;
+  transition:
+    opacity var(--duration-fast) ease,
+    transform var(--duration-fast) ease,
+    overlay var(--duration-fast) ease allow-discrete,
+    display var(--duration-fast) ease allow-discrete;
+
+  &[open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  // blur(0px), not none, so the blur interpolates instead of snapping in
+  &::backdrop {
+    background: transparent;
+    backdrop-filter: blur(0px);
+    transition:
+      background var(--duration-fast) ease,
+      backdrop-filter var(--duration-fast) ease,
+      overlay var(--duration-fast) ease allow-discrete,
+      display var(--duration-fast) ease allow-discrete;
+  }
+
+  &[open]::backdrop {
+    background: var(--color-backdrop);
+    backdrop-filter: blur(10px);
+  }
+}
+
+@supports (transition-behavior: allow-discrete) {
+  @starting-style {
+    .dialog[open] {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+
+    .dialog[open]::backdrop {
+      background: transparent;
+      backdrop-filter: blur(0px);
+    }
+  }
+}

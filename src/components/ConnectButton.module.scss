@@ -1,0 +1,83 @@
+@use '../styles/mixins' as *;
+
+// Phones keep the wallet icon alone so the header fits on one row
+.connect {
+  &.connect {
+    width: 2.625rem;
+    padding: 0;
+
+    @include from('sm') {
+      width: auto;
+      padding: 0 var(--space-5);
+    }
+  }
+
+  &__label {
+    display: none;
+
+    @include from('sm') {
+      display: inline;
+    }
+  }
+}
+
+.account {
+  @include reset-button;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 2.625rem;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  transition: border-color var(--duration-fast) ease;
+
+  &:hover {
+    border-color: var(--color-border-strong);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &__label {
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.menu {
+  width: 17rem;
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-2);
+  }
+
+  &__identity {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  &__address {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  &__connector {
+    font-size: var(--text-xs);
+    color: var(--color-text-subtle);
+  }
+}

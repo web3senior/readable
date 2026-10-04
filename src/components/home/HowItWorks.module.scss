@@ -1,0 +1,136 @@
+@use '../../styles/mixins' as *;
+
+// The words, what one number answers with, then a row for each scene: its words beside a phone
+// that plays it, the sides swapping from one row to the next
+.how {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--color-border);
+
+  &__intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 40rem;
+  }
+
+  &__title {
+    font-size: var(--text-display);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  &__body {
+    font-size: var(--text-md);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  // --- The scenes ---
+
+  &__scenes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+
+    @include from('lg') {
+      gap: var(--space-16);
+    }
+  }
+
+  // On a phone the words come first and the stage under them; side by side from lg
+  &__scene {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+
+    @include from('lg') {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: center;
+      gap: var(--space-12);
+    }
+
+    // Every other row has the stage on the left
+    &--flip .how__copy {
+      @include from('lg') {
+        order: 1;
+      }
+    }
+  }
+
+  // --- The words ---
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: 30rem;
+
+    @include from('lg') {
+      justify-self: center;
+      max-width: 26rem;
+    }
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-accent-text);
+  }
+
+  // A scene that isn't live yet says how far along it is
+  &__badge {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-muted);
+  }
+
+  &__copy-title {
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  &__copy-body {
+    font-size: var(--text-md);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  // A number in the words is never broken across lines
+  &__value {
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  // --- The stage ---
+
+  // No box of its own: the phone and its glow. The room around it is for the glow
+  &__stage {
+    display: grid;
+    // A track of the stage's own width, so a long line on the phone can't widen it
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding: var(--space-10) 0;
+  }
+
+  &__device {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+}

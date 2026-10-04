@@ -1,0 +1,198 @@
+@use '../../styles/mixins' as *;
+
+.page {
+  flex: 1;
+  // Where an anchor lands a section: under the header and, on a narrow screen, the contents row
+  --docs-landing: calc(var(--header-height) + var(--space-16));
+
+  @include from('lg') {
+    --docs-landing: calc(var(--header-height) + var(--space-6));
+  }
+
+  &__container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-gutter);
+
+    // Both columns stretch: the sidebar sticks inside its own column, so the column has to be
+    // as tall as the text beside it
+    @include from('lg') {
+      grid-template-columns: 14.5rem minmax(0, 1fr);
+      gap: var(--space-16);
+      padding-top: var(--space-10);
+    }
+  }
+}
+
+.doc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-width: 0;
+  // Room under the last section, so it too can be scrolled up to where sections are read
+  padding-bottom: 30svh;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    scroll-margin-top: var(--docs-landing);
+  }
+
+  &__title {
+    font-size: var(--text-display);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  &__heading {
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  &__lede {
+    max-width: 68ch;
+    font-size: var(--text-lg);
+    line-height: 1.7;
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+  }
+
+  &__text,
+  &__list,
+  &__steps {
+    max-width: 68ch;
+    line-height: 1.75;
+    color: var(--color-text-muted);
+
+    strong {
+      font-weight: var(--weight-semibold);
+      color: var(--color-text);
+    }
+
+    a {
+      color: var(--color-accent-text);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+      border-radius: var(--radius-sm);
+
+      &:focus-visible {
+        @include focus-ring;
+      }
+    }
+  }
+
+  &__list,
+  &__steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-inline-start: var(--space-5);
+  }
+
+  &__list {
+    list-style: disc;
+  }
+
+  &__steps {
+    list-style: decimal;
+  }
+
+  &__note,
+  &__callout {
+    max-width: 68ch;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-muted);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    color: var(--color-text-muted);
+
+    strong {
+      font-weight: var(--weight-semibold);
+      color: var(--color-text);
+    }
+  }
+
+  // What a reader must not miss, so it alone wears the accent
+  &__callout {
+    border-inline-start: 2px solid var(--color-accent-line);
+  }
+
+  // Code inside a sentence. Kept at the weight of one class, so a code block's own rules win
+  :where(code) {
+    padding: 0.1em 0.35em;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-muted);
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    color: var(--color-text);
+  }
+
+  // A number or a name is one word, however it is spaced
+  &__name {
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+    color: var(--color-text);
+  }
+
+  // An address is one word too long for a phone, so it breaks anywhere
+  &__address {
+    overflow-wrap: anywhere;
+  }
+}
+
+.roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 68ch;
+
+  &__item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+    align-items: baseline;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-muted);
+
+    @include from('sm') {
+      grid-template-columns: 5.5rem minmax(0, 1fr);
+      gap: var(--space-4);
+    }
+  }
+
+  &__stage {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+
+    &--reached {
+      color: var(--color-accent-text);
+    }
+  }
+
+  &__body {
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    color: var(--color-text-muted);
+
+    strong {
+      display: block;
+      font-weight: var(--weight-semibold);
+      color: var(--color-text);
+    }
+  }
+}

@@ -1,0 +1,168 @@
+@use '../../styles/mixins' as *;
+
+// A name's own page: what it is on one side, its holder's changes on the other
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+
+  &__back {
+    align-self: flex-start;
+  }
+
+  &__layout {
+    display: grid;
+    gap: var(--space-6);
+
+    @include from('lg') {
+      grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  // Stays in view beside the longer column of changes
+  &__summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+
+    @include from('lg') {
+      position: sticky;
+      top: calc(var(--header-height) + var(--space-4));
+    }
+  }
+
+  &__nft {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    max-width: 100%;
+  }
+
+  &__display {
+    min-width: 0;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  &__meta {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  &__term {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+
+  &__value {
+    min-width: 0;
+    font-weight: var(--weight-semibold);
+    text-align: end;
+  }
+
+  &__relative {
+    white-space: nowrap;
+    font-weight: var(--weight-regular);
+    color: var(--color-text-muted);
+  }
+
+  &__identity {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: 100%;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  // Two buttons sharing a row equally; a button keeps its size elsewhere
+  &__pair {
+    display: flex;
+    gap: var(--space-2);
+
+    > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+
+  &__hint {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  &__sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-width: 0;
+  }
+
+  // Where the changes would be, for anyone but the holder of a live name
+  &__notice {
+    padding: var(--space-10) var(--space-6);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-xl);
+  }
+
+  &__skeleton-summary {
+    height: 34rem;
+    border-radius: var(--radius-xl);
+  }
+
+  &__skeleton-panel {
+    height: 12rem;
+    border-radius: var(--radius-xl);
+  }
+}

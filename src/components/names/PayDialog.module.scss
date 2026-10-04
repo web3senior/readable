@@ -1,0 +1,97 @@
+@use '../../styles/mixins' as *;
+
+.pay {
+  width: min(24rem, calc(100vw - 2 * var(--container-gutter)));
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+
+  &[open] {
+    display: flex;
+  }
+
+  &__form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  &__title {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    overflow-wrap: anywhere;
+  }
+
+  &__name {
+    color: var(--color-accent-text);
+  }
+
+  &__to {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+    font-size: var(--text-sm);
+  }
+
+  &__term {
+    color: var(--color-text-muted);
+  }
+
+  &__identity {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: var(--weight-semibold);
+  }
+
+  &__presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  &__preset {
+    @include reset-button;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    transition:
+      border-color var(--duration-fast) ease,
+      color var(--duration-fast) ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-accent-line);
+      color: var(--color-accent-text);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+  }
+
+  &__note {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+}

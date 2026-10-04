@@ -1,0 +1,45 @@
+.action {
+  width: min(28rem, calc(100vw - 2 * var(--container-gutter)));
+  max-height: calc(100dvh - 2 * var(--space-6));
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+
+  &[open] {
+    display: flex;
+  }
+
+  &__form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-width: 0;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  &__title {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    overflow-wrap: anywhere;
+  }
+
+  &__description {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+}

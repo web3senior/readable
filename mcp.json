@@ -1,0 +1,7 @@
+{
+  "servers": {
+    "aimlapi": {
+      "url": "https://mcp.aimlapi.com/mcp"
+    }
+  }
+}

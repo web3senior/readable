@@ -1,0 +1,122 @@
+@use '../../styles/mixins' as *;
+
+.name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+
+  &__nft {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__badges {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    max-width: 100%;
+  }
+
+  &__display {
+    min-width: 0;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  // The name opens its page
+  &__link {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--duration-fast) ease;
+
+    &:hover {
+      color: var(--color-accent-text);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+      border-radius: var(--radius-sm);
+    }
+  }
+
+  &__meta {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-muted);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  &__term {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+
+  &__value {
+    min-width: 0;
+    font-weight: var(--weight-semibold);
+    text-align: end;
+  }
+
+  &__relative {
+    white-space: nowrap;
+    font-weight: var(--weight-regular);
+    color: var(--color-text-muted);
+  }
+
+  &__identity {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: 100%;
+  }
+
+  &__note {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: auto;
+  }
+}

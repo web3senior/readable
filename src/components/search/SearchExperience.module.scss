@@ -1,0 +1,67 @@
+@use '../../styles/mixins' as *;
+
+.experience {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 44rem;
+    margin: 0 auto;
+  }
+
+  &__results {
+    transition: opacity var(--duration) ease;
+
+    // Results for the previous query dim while the next one settles
+    &--settling {
+      opacity: 0.55;
+    }
+  }
+}
+
+// One name at a time, in a column of its own
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+
+  &__others {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  &__also {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+  }
+
+  &__other {
+    @include reset-button;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-accent-text);
+    transition: background-color var(--duration-fast) ease;
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-accent) 18%, var(--color-accent-soft));
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}

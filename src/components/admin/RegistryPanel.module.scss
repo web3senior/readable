@@ -1,0 +1,93 @@
+@use '../../styles/mixins' as *;
+
+.registry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  &__title {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.02em;
+  }
+
+  &__rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'term action'
+      'value action';
+    align-items: center;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--color-border);
+
+    &:first-child {
+      border-top: 0;
+    }
+
+    @include from('sm') {
+      grid-template-columns: 10rem minmax(0, 1fr) auto;
+      grid-template-areas: 'term value action';
+    }
+  }
+
+  &__term {
+    grid-area: term;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__value {
+    grid-area: value;
+    min-width: 0;
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+
+  &__action {
+    grid-area: action;
+  }
+
+  &__inline {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__address,
+  &__code {
+    font-family: var(--font-mono);
+  }
+
+  &__link {
+    border-radius: var(--radius-sm);
+
+    &:hover {
+      color: var(--color-accent-text);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}

@@ -1,0 +1,243 @@
+@use '../../styles/mixins' as *;
+
+// A tree on a tilted plane, focused on its middle: the number, a fan of lines, its kinds, and
+// from the kind shown a second fan to its rows. Sizes that the lines are drawn from come from
+// the component (`--map-height`, `--kind-*`, `--row-*`)
+.map {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) var(--space-3);
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-muted);
+
+  @include from('md') {
+    padding: var(--space-16) var(--space-6);
+  }
+
+  &__plane {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: var(--map-height);
+
+    // Seen from below and to the left, so the tree climbs to the right and comes nearer. The
+    // nearer side grows, so the plane leans back left to stay centered
+    @include from('md') {
+      transform: perspective(70rem) translateX(-3%) rotateY(-14deg) skewY(-6deg);
+    }
+  }
+
+  // --- Out of focus around the tree ---
+
+  &__ghost {
+    position: absolute;
+    display: none;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-sunken);
+    color: var(--color-text-subtle);
+    pointer-events: none;
+
+    @include from('md') {
+      display: flex;
+    }
+
+    &--near {
+      top: -10%;
+      left: -4%;
+      filter: blur(3px);
+    }
+
+    &--far {
+      right: 8%;
+      bottom: -14%;
+      padding: var(--space-2) var(--space-4);
+      filter: blur(2px);
+      opacity: 0.7;
+    }
+  }
+
+  &__bar {
+    width: 7rem;
+    height: 0.375rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-border-strong);
+  }
+
+  // --- The number ---
+
+  &__source {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__number {
+    display: flex;
+    align-items: center;
+    height: 3.5rem;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    box-shadow: var(--shadow-accent);
+    color: var(--color-on-accent);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+
+    @include from('md') {
+      padding: 0 var(--space-5);
+      font-size: var(--text-lg);
+    }
+  }
+
+  // Where lines leave from: faint, and full on the number and the kind shown
+  &__dot {
+    flex: none;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-accent-line) 35%, transparent);
+    transition:
+      background-color var(--duration-slow) var(--ease),
+      scale var(--duration-slow) var(--ease);
+
+    &--active {
+      background: var(--color-accent-line);
+      scale: 1.25;
+    }
+  }
+
+  // --- The lines ---
+
+  &__lines {
+    flex: none;
+    width: 1.5rem;
+    height: var(--map-height);
+    overflow: visible;
+
+    @include from('md') {
+      width: 3rem;
+    }
+
+    @include from('lg') {
+      width: 5rem;
+    }
+  }
+
+  &__line {
+    fill: none;
+    stroke: var(--color-accent-line);
+    stroke-width: 1.5;
+    stroke-opacity: 0.35;
+    transition: stroke-opacity var(--duration-slow) var(--ease);
+
+    &--active {
+      stroke-opacity: 1;
+    }
+  }
+
+  // --- The kinds ---
+
+  &__kinds {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: var(--kind-gap);
+  }
+
+  &__kind {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--kind-height);
+
+    // A phone has no rows to fan out to
+    .map__dot {
+      display: none;
+
+      @include from('md') {
+        display: block;
+      }
+    }
+  }
+
+  &__kind-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 100%;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-accent) 22%, var(--color-surface));
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+    transition:
+      background-color var(--duration-slow) var(--ease),
+      color var(--duration-slow) var(--ease),
+      box-shadow var(--duration-slow) var(--ease);
+
+    @include from('md') {
+      width: 10rem;
+      padding: 0 var(--space-4);
+    }
+
+    .map__kind--active & {
+      background: var(--color-accent);
+      box-shadow: var(--shadow-accent);
+      color: var(--color-on-accent);
+    }
+  }
+
+  // --- The rows of the kind shown ---
+
+  &__fan {
+    display: none;
+
+    @include from('md') {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  &__rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--row-gap);
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 14rem;
+    height: var(--row-height);
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-md);
+    background: linear-gradient(100deg, color-mix(in srgb, var(--color-accent) 70%, var(--color-surface)), var(--color-accent));
+    color: var(--color-on-accent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &__row-label {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    color: color-mix(in srgb, var(--color-on-accent) 70%, transparent);
+  }
+
+  &__row-value {
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

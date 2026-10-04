@@ -1,0 +1,83 @@
+@use '../../styles/mixins' as *;
+
+.wallet {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+
+  // Clips the letters of an address that outlast the pill as it narrows to the number
+  &__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    max-width: 100%;
+    height: 3.25rem;
+    padding-inline: var(--space-3) var(--space-5);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+    transition:
+      border-color var(--duration-slow) var(--ease),
+      background-color var(--duration-slow) var(--ease),
+      box-shadow var(--duration-slow) var(--ease);
+
+    &--named {
+      border-color: color-mix(in srgb, var(--color-accent-line) 50%, transparent);
+      background: var(--color-accent-soft);
+      box-shadow: var(--shadow-accent);
+    }
+
+    &--ruler {
+      width: max-content;
+      max-width: none;
+    }
+  }
+
+  // As tall as the pill, so a face stays where it is when the other one takes the flow
+  &__name {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    align-self: stretch;
+  }
+
+  &__face {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+
+    &--address {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+
+      @include from('sm') {
+        font-size: var(--text-md);
+      }
+    }
+
+    &--number {
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      color: var(--color-accent-text);
+    }
+
+    // The number before its first morph; from then on the morph places both faces itself
+    &--waiting {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+  }
+
+  &__ruler {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+  }
+}
