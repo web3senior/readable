@@ -362,3 +362,33 @@ contract SecondReviewTest is Fixture {
         _assertValidity(arc, string(abi.encodePacked(_utf8(0x529b), _utf8(0x4e00), _utf8(0x30c9))), IReadable.Validity.Valid);
     }
 }
+
+/**
+ * @dev What the review of 2026-10-05 found, held the same way.
+ */
+contract ThirdReviewTest is Fixture {
+    // --- FIXED ---
+
+    // 1: a name without an editor stores address(0), so a forwarder that lets a request through as
+    //    address(0), as a hand-written ecrecover does on a bad signature, passed for the editor of
+    //    every such name. Hup's forwarders never name address(0); the registry no longer relies on it
+    function test_Fixed1_NoSignerIsNoEditor() public {
+        uint256 tokenId = _register(alice, numbers, "4242");
+        assertEq(registry.editorOf(tokenId), address(0));
+        RogueForwarder rogue = new RogueForwarder();
+        vm.prank(owner);
+        registry.setTrustedForwarder(address(rogue));
+
+        assertFalse(rogue.act(address(registry), address(0), abi.encodeCall(Readable.setTarget, (tokenId, stranger))));
+        assertFalse(rogue.act(address(registry), address(0), abi.encodeCall(Readable.setText, (tokenId, "records", "stranger's"))));
+        assertFalse(rogue.act(address(registry), address(0), abi.encodeCall(Readable.setAddrs, (tokenId, _coin(0, hex"b0b0")))));
+        assertEq(registry.resolve(tokenId), alice);
+        assertEq(registry.text(tokenId, "records"), "");
+
+        // An editor the holder named still changes the name through it
+        vm.prank(alice);
+        registry.setEditor(tokenId, bob);
+        assertTrue(rogue.act(address(registry), bob, abi.encodeCall(Readable.setTarget, (tokenId, bob))));
+        assertEq(registry.resolve(tokenId), bob);
+    }
+}

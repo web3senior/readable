@@ -226,11 +226,13 @@ contract Readable is IReadable, ERC721, Ownable2Step, Pausable {
     }
 
     /// @dev A live name is changed by its holder or an account the holder approved, and, where
-    ///      `editorToo`, by the editor the holder named.
+    ///      `editorToo`, by the editor the holder named. A name without one stores address(0),
+    ///      which a forwarder naming no signer must never pass for.
     function _requireActiveHolder(uint256 tokenId, address account, bool editorToo) internal view {
         address holder = _ownerOf(tokenId);
         if (holder == address(0)) revert NameNotFound(tokenId);
-        if (!_isAuthorized(holder, account, tokenId) && !(editorToo && account == _editors[tokenId][_generation[tokenId]])) {
+        address editor = _editors[tokenId][_generation[tokenId]];
+        if (!_isAuthorized(holder, account, tokenId) && !(editorToo && editor != address(0) && account == editor)) {
             revert NotNameOwner(tokenId);
         }
         if (block.timestamp >= _records[tokenId].expiresAt) revert NameExpired(tokenId);
