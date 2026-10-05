@@ -544,7 +544,7 @@ export const site = {
   activity: {
     title: 'Latest activity',
     path: '/api/activity',
-    limit: 10,
+    limit: 20,
     // Beside the title: that the table is only the newest, and of how many once there are more
     shown: { all: 'The last {shown}', more: 'The last {shown} of {total}' },
     columns: { name: 'Name', kind: 'Activity', wallet: 'Wallet', paid: 'Paid', at: 'When' },
