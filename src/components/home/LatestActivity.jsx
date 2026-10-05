@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { Rise } from 'cube-motion/react'
@@ -25,10 +26,10 @@ import { registry } from '@/config/registry'
 import { site } from '@/config/site'
 import useLatestActivity from '@/hooks/useLatestActivity'
 import { focusSearch } from '@/lib/focusSearch'
-import { formatAgo, formatAmount, truncateAddress } from '@/lib/format'
+import { formatAgo, formatAmount, formatCount, truncateAddress } from '@/lib/format'
 import styles from './LatestActivity.module.scss'
 
-const { label, loading, columns, kinds, next } = site.activity
+const { title, loading, shown, columns, kinds, next } = site.activity
 
 const ICONS = {
   bought: ShoppingCartSimpleIcon,
@@ -125,17 +126,27 @@ function Head() {
 
 /**
  * What happened to names lately, a row each: the name, what happened, the wallet, what was paid
- * and when. Under it, an invitation that is the visitor's to take up. Absent until the registry
- * has a name.
+ * and when. Its title says how many of how many it shows; under it, an invitation that is the
+ * visitor's to take up. Absent until the registry has a name.
  */
 export default function LatestActivity({ className }) {
-  const { rows, currency, readAt, isPending } = useLatestActivity()
+  const titleId = useId()
+  const { rows, total, currency, readAt, isPending } = useLatestActivity()
   const explorer = explorerFor(registry.chainId)
 
   if (!isPending && rows.length === 0) return null
 
+  const count = (total > rows.length ? shown.more : shown.all).replace('{shown}', formatCount(rows.length)).replace('{total}', formatCount(total))
+
   return (
-    <section className={clsx(styles.activity, className)} aria-label={label}>
+    <section className={clsx(styles.activity, className)} aria-labelledby={titleId}>
+      <div className={styles.activity__head}>
+        <h2 id={titleId} className={styles.activity__headline}>
+          {title}
+        </h2>
+        {!isPending && <span className={styles.activity__count}>{count}</span>}
+      </div>
+
       <div className={styles.activity__frame}>
         <div className={styles.activity__scroll}>
           <table className={styles.activity__table}>

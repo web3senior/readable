@@ -99,7 +99,8 @@ const read = (functionName, args) => publicClient().readContract({ address: regi
 
 async function loadActivity() {
   const [events, { namespaces, currency }] = await Promise.all([readEvents(EVENTS), readRegistry()])
-  const entries = group(events).slice(0, limit)
+  const grouped = group(events)
+  const entries = grouped.slice(0, limit)
 
   // One reading of each transaction and each name, however many entries share it
   const once = (cache, key, load) => cache.get(key) ?? cache.set(key, load()).get(key)
@@ -137,7 +138,7 @@ async function loadActivity() {
     })
   )
 
-  return { rows: rows.filter(Boolean), currency: { symbol: currency.symbol, decimals: currency.decimals } }
+  return { rows: rows.filter(Boolean), total: grouped.length, currency: { symbol: currency.symbol, decimals: currency.decimals } }
 }
 
 let kept = null
@@ -147,7 +148,7 @@ let kept = null
  * change a holder or its editor made. One reading serves every visitor for `cacheSeconds`.
  */
 export function readActivity() {
-  if (!registryEnabled) return Promise.resolve({ rows: [], currency: null })
+  if (!registryEnabled) return Promise.resolve({ rows: [], total: 0, currency: null })
   if (!kept || Date.now() >= kept.until) {
     const reading = loadActivity()
     kept = { reading, until: Date.now() + cacheSeconds * 1000 }

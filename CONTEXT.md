@@ -636,11 +636,15 @@ fixes and a second check.
   `formatAgo` in `lib/format.js`; weeks instead of months, whose narrow form reads as
   minutes), and links to the transaction. Kinds are `site.activity.kinds`: bought, granted,
   renewed, transferred, repointed, records updated, other chains set, made primary, editor
-  named or removed. It has no heading (the user had "Latest buys" removed). The wallet's
+  named or removed. Its title is "Latest activity" (`site.activity.title`, 2026-10-06, the
+  user's request), after a time without one (the user had "Latest buys" removed). The wallet's
   picture is `ui/Identicon`, the blockie Hup draws beside a profile, which the user asked for.
   The user wanted the feed to encourage a visitor, so under the table is an empty slot with a
   button that focuses the search (`site.activity.next`, `lib/focusSearch.js`). It shows
-  `site.activity.limit` rows, eight.
+  `site.activity.limit` rows, ten since 2026-10-06 (eight before), and beside the title says
+  how many: "The last 10", and "The last 10 of 248" once the registry's history holds more
+  (`site.activity.shown`; the user's request, so a visitor sees there is more). `/api/activity`
+  answers `total`, every row the history makes, for it.
 - **Latest activity** comes from `/api/activity` (`lib/activity.js`), read on the server and
   kept for `site.activity.cacheSeconds`, so visitors don't each read the chain. The events come
   from Blockscout (`eventsApiFor` in `config/chains.js`), every kind in one page of the

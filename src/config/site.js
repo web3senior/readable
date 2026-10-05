@@ -540,12 +540,13 @@ export const site = {
     ],
   },
 
-  // The home page table of what happened to names lately, served by `path`. It has no heading:
-  // `label` is what a screen reader calls it
+  // The home page table of what happened to names lately, served by `path`, under its `title`
   activity: {
-    label: 'Latest activity',
+    title: 'Latest activity',
     path: '/api/activity',
-    limit: 8,
+    limit: 10,
+    // Beside the title: that the table is only the newest, and of how many once there are more
+    shown: { all: 'The last {shown}', more: 'The last {shown} of {total}' },
     columns: { name: 'Name', kind: 'Activity', wallet: 'Wallet', paid: 'Paid', at: 'When' },
     // One per kind. The wallet is the new holder of a name bought, granted or transferred, and
     // otherwise the one who made the change

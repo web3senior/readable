@@ -12,7 +12,10 @@ const fetchActivity = async () => {
   return response.json()
 }
 
-/** What happened to names lately, asked for again while the page stays open. `readAt` is when it was read. */
+/**
+ * What happened to names lately, asked for again while the page stays open. `total` counts every
+ * row the registry's history makes, `readAt` is when it was read.
+ */
 export default function useLatestActivity() {
   const query = useQuery({
     queryKey: ['activity', registry.address],
@@ -24,6 +27,7 @@ export default function useLatestActivity() {
 
   return {
     rows: query.data?.rows ?? [],
+    total: query.data?.total ?? 0,
     currency: query.data?.currency ?? null,
     readAt: query.dataUpdatedAt,
     isPending: registryEnabled && query.isPending,
