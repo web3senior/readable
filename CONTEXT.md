@@ -648,7 +648,9 @@ fixes and a second check.
   beside the title says how many: "The last 20", and "The last 20 of 248" once the registry's
   history holds more
   (`site.activity.shown`; the user's request, so a visitor sees there is more). `/api/activity`
-  answers `total`, every row the history makes, for it.
+  answers `total`, every row the history makes, for it. The rows scroll inside the table past
+  about ten (the user's request, 2026-10-06), the next one cut at the edge to show it, and the
+  column headings stay at the top.
 - **Latest activity** comes from `/api/activity` (`lib/activity.js`), read on the server and
   kept for `site.activity.cacheSeconds`, so visitors don't each read the chain. The events come
   from Blockscout (`eventsApiFor` in `config/chains.js`), every kind in one page of the
