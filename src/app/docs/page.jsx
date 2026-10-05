@@ -2,12 +2,11 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import CodeBlock from '@/components/docs/CodeBlock'
 import DocsNav from '@/components/docs/DocsNav'
-import { Extensions, GracePeriod, Prices } from '@/components/docs/LiveFacts'
+import { CheckDigit, Extensions, GracePeriod, NumberNotes, NumberRules, Prices, ShortestLength } from '@/components/docs/LiveFacts'
 import Spec from '@/components/docs/Spec'
 import {
   addrSample,
   apiSample,
-  checkDigitSample,
   contractSample,
   recordsDocument,
   recordsSample,
@@ -26,7 +25,7 @@ import { registry } from '@/config/registry'
 import { site } from '@/config/site'
 import { tokenBound, tokenBoundOn } from '@/config/tokenBound'
 import { launchNumbers as numbers, stage } from '@/lib/docs'
-import { formatCount, formatYears } from '@/lib/format'
+import { formatYears } from '@/lib/format'
 import { formatNumber } from '@/lib/query/numbers'
 import styles from './page.module.scss'
 
@@ -71,20 +70,18 @@ const Address = ({ value }) => <code className={styles.doc__address}>{value}</co
 
 /**
  * The docs: one page with its contents beside it, not a route per topic. The page itself reads
- * nothing: it is written from the config and sent at once. What the registry decides (prices,
- * extensions, the grace period) is read by the browser afterwards, in
+ * nothing: it is written from the config and sent at once. What the registry decides (the number
+ * rules, prices, extensions, the grace period) is read by the browser afterwards, in
  * components/docs/LiveFacts.
  */
 export default function DocsPage() {
   const written = (digits) => formatNumber(digits, numbers)
   const example = {
-    short: written(docs.examples.short),
     number: written(docs.examples.number),
     long: written(docs.examples.long),
     // The long one in groups of four, as people often type a number
     spaced: written(docs.examples.long.replace(/\d{4}(?=\d)/g, '$& ')),
   }
-  const checkDigitFrom = numbers.rules.checkDigit?.fromLength ?? 0
   const { currency } = numbers.preview
 
   const explorer = explorerFor(home.id)
@@ -96,7 +93,6 @@ export default function DocsPage() {
     numbersId: String(docs.examples.namespaceId),
     number: example.long,
     label: docs.examples.long,
-    checkDigitFrom,
     recordsKey: records.key,
     baseUrl: site.baseUrl,
   }
@@ -171,14 +167,7 @@ export default function DocsPage() {
               A number is written <Name>{example.long}</Name>: the prefix <code>{numbers.prefix}</code>, then the digits, unbroken. No
               country’s phone code starts with 0, so a Readable number can never be mistaken for a phone number.
             </p>
-            <Spec
-              rows={[
-                ['Length', `${numbers.rules.minLength} to ${numbers.rules.maxLength} digits`],
-                ['Check digit', checkDigitFrom ? `The last digit, in numbers of ${checkDigitFrom} digits and longer` : 'None'],
-                ['Stored as', <code key="stored">{docs.examples.long}</code>],
-                ['Shortest', example.short],
-              ]}
-            />
+            <NumberRules />
             <ul className={styles.doc__list}>
               <li>
                 <strong>Spaces and dashes don’t count.</strong> <code>{example.spaced}</code>,{' '}
@@ -190,16 +179,7 @@ export default function DocsPage() {
                 the number after it, so <code>0{docs.examples.number}</code> is read as <Name>{example.number}</Name>, its prefix
                 written without the plus.
               </li>
-              <li>
-                <strong>Short numbers are the rare ones.</strong> Only {formatCount(10 ** numbers.rules.minLength, LOCALE)} numbers have{' '}
-                {numbers.rules.minLength} digits, and they are priced to match. Long numbers cost very little.
-              </li>
-              {checkDigitFrom > 0 && (
-                <li>
-                  <strong>Long numbers check themselves.</strong> From {checkDigitFrom} digits, the last digit is worked out from the
-                  others, so one mistyped digit fails instead of reaching a stranger. See <a href="#check-digit">the check digit</a>.
-                </li>
-              )}
+              <NumberNotes />
             </ul>
           </Section>
 
@@ -503,8 +483,8 @@ export default function DocsPage() {
                     ERC-6551
                   </a>{' '}
                   account, its {agentWallet.title.toLowerCase()}: a wallet controlled by whoever holds the name, at an address that
-                  never changes. It receives before it is created, and the holder creates it the first time something moves out of
-                  it. Keep an agent’s earnings and tools there and they change hands with its name, as a business’s accounts go with
+                  never changes. It receives before it is created; the holder creates it from the name’s page, or the first time
+                  something moves out of it. Keep an agent’s earnings and tools there and they change hands with its name, as a business’s accounts go with
                   the business. The holder can point the name at it from the name’s page; until then payments go to the wallet the
                   name points to, as always.
                 </p>
@@ -709,25 +689,7 @@ export default function DocsPage() {
           </Section>
 
           <Section id="check-digit">
-            {checkDigitFrom > 0 ? (
-              <>
-                <p className={styles.doc__text}>
-                  Numbers of {checkDigitFrom} digits and longer end in a check digit, worked out from the digits before it by the Luhn
-                  formula that payment cards use. You choose all the digits but the last.
-                </p>
-                <p className={styles.doc__text}>
-                  Of the ten numbers that differ only in their last digit, one is valid. A single mistyped digit, and most swaps of
-                  two neighbours, give a number that can’t exist, so the mistake is caught before anything is sent.
-                </p>
-                <CodeBlock language="JavaScript" code={checkDigitSample(sample)} />
-                <p className={styles.doc__text}>
-                  The registry runs the same check: <code>lookup</code> answers a wrong check digit with the validity{' '}
-                  <code>InvalidCheckDigit</code> (6), and <code>register</code> refuses it. Check in your app first, and the reader learns about the typo without a call.
-                </p>
-              </>
-            ) : (
-              <p className={styles.doc__text}>The registry’s numbers carry no check digit.</p>
-            )}
+            <CheckDigit textClassName={styles.doc__text} />
           </Section>
 
           <Section id="events">
@@ -817,7 +779,11 @@ export default function DocsPage() {
                   stage,
                   reached,
                   title: 'Numbers',
-                  body: `Numbers from ${numbers.rules.minLength} digits, with search, registration, renewal, records and transfers.`,
+                  body: (
+                    <>
+                      Numbers from <ShortestLength /> digits, with search, registration, renewal, records and transfers.
+                    </>
+                  ),
                 },
                 {
                   stage: 'next',

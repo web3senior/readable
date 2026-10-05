@@ -2,9 +2,9 @@
 // points the name at it, moves out the ETH someone sent it (which creates the account first) and
 // points the name back. A visitor sees where it points. The chain is read back after each step.
 //
-// Against a dev server that reads a public RPC (Base Sepolia's own registry, a real name), send
+// Against a dev server that reads a public RPC (Robinhood Chain's own registry, a real name), send
 // that RPC's requests to the fork and name the registry and the number:
-//   E2E_APP=https://localhost:3003 E2E_FORWARD_RPC=https://sepolia.base.org \
+//   E2E_APP=https://localhost:3003 E2E_FORWARD_RPC=https://rpc.mainnet.chain.robinhood.com \
 //   E2E_REGISTRY=0x… E2E_NAME=alice.arc node tests/e2e/agentWallet.mjs
 // The holder is impersonated on the fork, so it can be any account, a smart one included.
 import { join } from 'node:path'
@@ -15,7 +15,7 @@ const REGISTRY = process.env.E2E_REGISTRY ?? registryAddress()
 const NAME = process.env.E2E_NAME ?? '+0 4343'
 const FORWARD = process.env.E2E_FORWARD_RPC
 const NUMBER = NAME.startsWith('+0 ')
-const PAGE = `${APP}/names/${NAME.replace(' ', '-')}`
+const PAGE = `${APP}/names/${NAME.replace(' ', '')}`
 const SENT = parseEther('0.02')
 // ERC-6551's registry and Tokenbound's account proxy, as src/config/tokenBound.js names them
 const ERC6551 = '0x000000006551c19487814612e58FE06813775758'

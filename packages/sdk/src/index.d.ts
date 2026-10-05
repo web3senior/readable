@@ -61,7 +61,7 @@ export interface Agent {
 }
 
 export interface ReadableOptions {
-  /** A viem chain or its id. Base by default. */
+  /** A viem chain or its id. Robinhood Chain by default. */
   chain?: Chain | number
   /** The registry's address, for a chain the SDK doesn't know. */
   registry?: Address

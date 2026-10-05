@@ -21,7 +21,7 @@ import {
   toHex,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { baseSepolia } from 'viem/chains'
+import { robinhood } from 'viem/chains'
 import { APP, BUYER, CHAIN_ID, OTHER, OWNER, RPC, ethOf, launch, registryAbi, registryAddress, shotsDir, walletShim } from './setup.mjs'
 
 // Anvil's second default account, the buyer: its key is public, the same on every Anvil
@@ -32,7 +32,7 @@ const ENS_PARENT = 'readable.eth'
 const NUMBERS = 1n
 const AGENT = { endpoint: 'https://iris.example/mcp', erc8004: '412' }
 
-const chain = { ...baseSepolia, rpcUrls: { default: { http: [RPC] } } }
+const chain = { ...robinhood, rpcUrls: { default: { http: [RPC] } } }
 const reader = createPublicClient({ chain, transport: http(RPC) })
 // Anvil's accounts are unlocked, so a plain address signs
 const walletOf = (account) => createWalletClient({ account, chain, transport: http(RPC) })
@@ -73,11 +73,14 @@ check(agents.body?.agents?.some((agent) => agent.name === '+0 5555' && agent.end
 const verified = await api(`/api/verify/${encodeURIComponent('+0 5555')}`)
 check(verified.status === 200 && verified.body.verified.github === false, 'a proof link to a gist that does not exist is not verified')
 
-const badge = await fetch(`${APP}/api/badge/+0-5555`)
+const badge = await fetch(`${APP}/api/badge/+05555`)
 check(badge.ok && (await badge.text()).includes('+0 5555'), 'the badge draws the name')
 
-const card = await fetch(`${APP}/names/+0-5555/opengraph-image`)
+const card = await fetch(`${APP}/names/+05555/opengraph-image`)
 check(card.ok && card.headers.get('content-type') === 'image/png', 'the name page has a preview picture')
+
+const moved = await fetch(`${APP}/names/+0-5555`, { redirect: 'manual' })
+check(moved.status === 308 && new URL(moved.headers.get('location'), APP).pathname === '/names/+05555', 'an older link with a dash moves to the page')
 
 // --- The MCP server ---
 
@@ -230,7 +233,7 @@ const watching = page.locator('section', { hasText: 'Watching' })
 await watching.getByText(/Returns/).waitFor({ timeout: 30000 })
 check((await watching.getByRole('link', { name: '+0 4242' }).count()) === 1, 'the watch list shows the day the name returns')
 
-await page.goto(`${APP}/names/+0-5555`, { waitUntil: 'networkidle' })
+await page.goto(`${APP}/names/+05555`, { waitUntil: 'networkidle' })
 await page.getByText(AGENT.endpoint.replace('https://', '')).first().waitFor({ timeout: 30000 })
 const tunnel = await page.getByRole('link', { name: 'Add in Tunnel' }).getAttribute('href')
 check(tunnel.includes('tunnelapp.chat/chat?add=%2B05555'), 'the page links to Tunnel with the number')
@@ -244,7 +247,7 @@ const buyer = await browser.newContext({ viewport: { width: 1280, height: 1000 }
 await buyer.addInitScript(walletShim, { rpc: RPC, account: BUYER })
 const payer = await buyer.newPage()
 watchProblems(payer)
-await payer.goto(`${APP}/names/+0-5555`, { waitUntil: 'networkidle' })
+await payer.goto(`${APP}/names/+05555`, { waitUntil: 'networkidle' })
 await payer.getByRole('button', { name: 'Pay', exact: true }).click()
 await payer.locator('dialog[open]').getByText('Browser wallet').click()
 await payer.getByRole('button', { name: 'Account' }).waitFor({ timeout: 15000 })
@@ -259,7 +262,7 @@ check((await ethOf(OWNER)) - before === 10n ** 15n, 'the page pays 0.001 ETH to 
 await payer.screenshot({ path: join(shotsDir, 'reach-paid.png'), fullPage: true })
 
 // The buyer holds +0 4242: proving a GitHub account signs the statement the server checks
-await payer.goto(`${APP}/names/+0-4242`, { waitUntil: 'networkidle' })
+await payer.goto(`${APP}/names/+04242`, { waitUntil: 'networkidle' })
 await payer.getByPlaceholder('handle').nth(2).fill('readable-e2e-holder')
 await payer.getByRole('button', { name: 'Prove it' }).click()
 const proof = payer.locator('dialog[open]')

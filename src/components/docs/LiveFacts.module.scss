@@ -12,6 +12,20 @@
     border-radius: var(--radius-md);
   }
 
+  // Four rows of a Spec
+  &__rules {
+    max-width: 68ch;
+    height: 12rem;
+    border-radius: var(--radius-md);
+  }
+
+  // One line of a list item
+  &__line {
+    max-width: 48ch;
+    height: 1.5em;
+    border-radius: var(--radius-sm);
+  }
+
   &__note {
     max-width: 68ch;
     padding: var(--space-3) var(--space-4);

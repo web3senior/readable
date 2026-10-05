@@ -59,6 +59,13 @@ export const site = {
     keypad: 'Spells {word} on a phone keypad',
     // Free numbers next to a taken one, offered under it
     nearby: { label: 'Free nearby', limit: 4 },
+    // Once a name is registered, its card offers a post about it on X. `{name}` is the name and
+    // `{site}` this site; `url` is the name's page, whose preview shows the name
+    shareOnX: {
+      label: 'Share on X',
+      text: 'I just registered {name} on {site}',
+      url: 'https://x.com/intent/post?text={text}&url={url}',
+    },
   },
 
   // Buying without the chain's coin: the wallet signs and the relayer pays the network fee
@@ -129,6 +136,9 @@ export const site = {
       unread: 'Could not be read',
       // Shown while it isn't created and holds something: moving it out creates it first
       createNote: 'It receives before it is created. Moving anything out creates it first, in a transaction of its own.',
+      // Shown while it isn't created and holds no ETH, under the button that creates it
+      createFee: 'It receives before it is created. Creating it is an ordinary transaction, with a network fee.',
+      create: 'Create now',
       fee: 'Moving it out is an ordinary transaction, with a network fee.',
       explorer: 'See everything it holds',
       point: 'Point {name} here',
@@ -468,9 +478,10 @@ export const site = {
     description: 'How Readable works: getting, managing and paying a number or a username, and resolving one from an app, a contract or an AI agent.',
     navLabel: 'Documentation',
     copyCode: 'Copy code',
-    // Digits the page shows in the number namespace's own format; `long` ends in its check digit.
-    // `namespaceId` is the id the printed code gives the numbers: the first namespace added
-    examples: { short: '42', number: '4242', long: '42421230', namespaceId: 1 },
+    // Digits the page shows in the number namespace's own format; `long` ends in its check digit
+    // and seeds the shortest number the registry sells. `namespaceId` is the id the printed code
+    // gives the numbers: the first namespace added
+    examples: { number: '4242', long: '42421230', namespaceId: 1 },
     // How far along the registry is, shown in the introduction and the roadmap
     stages: { preview: 'Preview', testnet: 'Testnet', live: 'Live', next: 'Next', planned: 'Planned' },
     // The page is sent as written. What the registry decides is read by the browser afterwards
@@ -487,10 +498,14 @@ export const site = {
     kinds: { name: 'Name', number: 'Number' },
     traits: { kind: 'Kind', length: 'Length', registered: 'Registered', expires: 'Expires' },
     cacheSeconds: 300,
-    // An image can't read CSS variables, so its colors mirror the accent and its ink here
+    // An image can't read CSS variables, so its colors are set here
     art: {
       size: 500,
       radius: 56,
+      // The picture behind the name: an SVG in public/, written into each image, since a
+      // picture shown through <img> loads nothing it links to. `ink` is the text on it.
+      backdrop: { file: 'nft-bg.svg', ink: '#ffffff' },
+      // The share card and the app icon: the accent and the ink on it
       background: '#2aabee',
       ink: '#0f1419',
       font: 'system-ui, sans-serif',

@@ -49,10 +49,26 @@ Roadmap order, decided by the user:
   description takes a line of its own, so it is two lines on a wide screen (the user's
   request). The share card keeps the plain `site.subtitle`. The
   user's word was "it will be on Robinhood", in reply to a Base badge: the registry is to live
-  on Robinhood Chain. **Nothing else has moved yet**: `config/chains.js`, the deployments, the
-  docs and the copy that names Base (its wallet, OpenSea, the onramp, the ETH/USD
-  feed, the Hup forwarders) still follow the Base decision below. The claim is only about a
-  holder's changes to a name: buying still costs gas.
+  on Robinhood Chain, where it moved on 2026-10-06 (below). The claim is only about a holder's
+  changes to a name: buying still costs gas.
+- **Robinhood Chain (4663) is the home chain, and Base Sepolia is gone (2026-10-06, the user's
+  words: "I deployed on robinhood. remove base sepolia entirely").** Replaces the Base decision
+  below. The registry is `0x8085d2351F5Bb3675549683495134fc9B4D8A2F9`, the app's and the SDK's
+  only chain; Base Sepolia left `config/chains.js`, `config/tokenBound.js`, the SDK, the Snap's
+  lookup chains (`eip155:4663` in its place), the deploy page, the end-to-end scripts (they fork
+  Robinhood Chain) and `deploy/verification/deployed/`. Base stays where Base itself is meant:
+  Chainlink's ETH/USD feed is read there, and the OpenSea and onramp entries are Base's, so
+  neither shows on Robinhood Chain. The copy that names Base (a name's wallet "on Base and most
+  EVM chains", the Pay scene) has not moved.
+  - **Its events come from the chain, not Blockscout.** Robinhood Chain's Blockscout answers a
+    server with Cloudflare's browser check (403), and its public RPC serves `eth_getLogs` over
+    ten million blocks a request (about eleven days at 0.1 s a block). So `lib/events.js` reads
+    the registry's whole history in windows of `logSpanFor` (`LOG_SPANS` in `config/chains.js`)
+    from `NEXT_PUBLIC_READABLE_FROM_BLOCK`, the block the registry was deployed in (81,103,476),
+    and with `all` the chain must answer instead of the explorer. A year is about 32 reads. A
+    smart account's purchase shows no price (`readPaymentsInside` needs the explorer's trace).
+  - The SDK defines Robinhood Chain itself with `defineChain` and defaults to it: it takes any
+    viem 2, and older releases don't export `robinhood`.
 - **Search copy lives in `config/site.js`, not in env (2026-10-04, the user's choice over
   hupsocial's `NEXT_PUBLIC_TITLE` and kin).** It is the same on every deployment, and a
   `NEXT_PUBLIC_*` value is fixed at build anyway. `site.description` is the hero in one sentence,
@@ -88,8 +104,14 @@ Roadmap order, decided by the user:
   looked like several and left a lone digit at the end (`+0 4242 1`). Hyphens (`+0 4242-1230`)
   were proposed and rejected by the user: no separator at all. It is how `nameOf` writes a
   number onchain too. Only the display changed: the search, the SDK and `/admin` still take
-  spaces and dashes, a page's path is `/names/+0-42421230`, and an old `/names/+0-4242-1230`
-  link still opens. `formatNumber` and the SDK's `formatName` write it; `groupSize` is gone.
+  spaces and dashes. `formatNumber` and the SDK's `formatName` write it; `groupSize` is gone.
+- **A number's page has no separator in its path: `/names/+042421230` (2026-10-05, the user's
+  request: the dash "brings complexity to the url and not friendly").** `namePath` drops the
+  space, so every link the site writes (Copy link, the badge, the search, My names, the latest
+  activity, the agents directory, the MCP server's `page`) is the joined form. `nameFromSlug`
+  reads it back by the launch number prefix, for the title, the preview picture and the badge.
+  An older link, `/names/+0-42421230` or `/names/+0-4242-1230` (and `%2B0-4242`, as Tunnel and
+  Hup still write it), is sent on with a 308 by `movedNamePath` in the page.
 - **A name stays reachable when what is sold changes (2026-10-04, a fix the user asked for).**
   On Base Sepolia the owner set Numbers to 4 to 6 digits with a check digit from 6 after
   `+0 123456` and `+0 1234567` were registered. The app checked a name against today's length
@@ -110,7 +132,8 @@ Roadmap order, decided by the user:
   many countries write a local number, reached a stranger. `_measureNumber` refuses it as
   `InvalidCharacter`. The app (`parseNumber`) and the SDK (`locateIn`) read a bare leading `0`
   as the prefix, so `04242` is `+0 4242`; `+0 04242` says "A number doesn't start with 0".
-- **One home chain: Base (8453), rehearsed on Base Sepolia (84532). Decided 2026-09-29**, replacing
+- **Superseded on 2026-10-06 by Robinhood Chain, above.** **One home chain: Base (8453), rehearsed
+  on Base Sepolia (84532). Decided 2026-09-29**, replacing
   Arc. The user chose reach (wallets, marketplaces, the largest USDC user base) over Arc's simpler
   purchase. The app's chain is `NEXT_PUBLIC_READABLE_CHAIN_ID` (`config/chains.js`). Deploying
   the same registry on several chains would break uniqueness; other chains should read it
@@ -353,7 +376,9 @@ Roadmap order, decided by the user:
   read in `lib/tokenBound.js`, checked against the registry's `account()`), the pair Tokenbound's
   tools use. The holder's page has an "Agent wallet" section (`components/names/AgentWallet`):
   the address, its ETH, whether it exists, a button that points the name at it and back, and one
-  that moves its ETH to the holder. The summary's Points to says "Its agent wallet". Payments
+  that moves its ETH to the holder. **Create now** (2026-10-06, the user's request) sets it up
+  alone while it isn't, the same transaction Move sends first: before it is funded, or when it
+  holds only tokens, which Move doesn't cover. Not for an expired name, whose holder only moves out. The summary's Points to says "Its agent wallet". Payments
   still go to `target`; the wallet gets them only once the holder points the name there.
   - **It is never reset**, unlike the target, records and editor. The token id comes from the
     label, so the address is the same for every holder, and whatever is in it passes to whoever
@@ -405,6 +430,13 @@ Roadmap order, decided by the user:
   explorers show Base Sepolia.
 - **My names shows each name's NFT** at the top of its card, drawn by the site's own
   `/nft/<id>/image`, so it shows whatever the onchain link says.
+- **The NFT picture is drawn on the user's own background (2026-10-05)**, `public/nft-bg.svg`
+  (dark violet rings), named by `nft.art.backdrop` with the ink on it (white). The server
+  writes the file's markup into each picture, since a picture shown through `<img>`, as wallets
+  and marketplaces show it, loads nothing it links to; `next.config.mjs` ships `public/*.svg`
+  with the `/nft` routes for that read. Replace the file to change the background; it is read
+  on each request, scaled to the square by its own viewBox and clipped to the corners. The
+  share card and the app icon keep the accent (`nft.art.background` and `ink`).
 - Brand explored and chosen: **readable.name** (tagline idea "0x… is not a name").
 - **The primary color is Telegram's blue `#2aabee` (2026-10-04, the user's words: "make it
   blue like telegram")**, the light end of Telegram's logo gradient; the hover in light mode is
@@ -414,9 +446,9 @@ Roadmap order, decided by the user:
   `--color-warning` and `--color-danger`, so a primary button read like a warning, and it was
   close to Claude's brand color) and the cyan `#22d3ee`. Green, red and amber already mean
   success, danger and warning, so the accent stays out of them. It is `--color-accent` in
-  light and dark alike, and the background of the NFT picture (`nft.art` in `config/site.js`),
+  light and dark alike, and the background of the share card (`nft.art` in `config/site.js`),
   the badge, the app icon, the Snap icon, the sample SVG and the deploy
-  page. Ink on it is dark (`#0f1419`, 7.2:1), never white (2.6:1), unlike Telegram's own
+  page, but no longer of the NFT picture (see below). Ink on it is dark (`#0f1419`, 7.2:1), never white (2.6:1), unlike Telegram's own
   buttons. On white the blue is 2.6:1, so in light mode it is a fill only: a border, the
   focus ring, a spinner or an icon reads `--color-accent-line` (`#1088c6`, 3.5:1 on the soft
   fill), and text reads `--color-accent-text` (`#0d6ea1`, 5:1 on the soft fill). In dark mode
@@ -690,6 +722,12 @@ fixes and a second check.
   `components/docs/LiveFacts`: the price tables, the extensions and the grace period. A
   skeleton or the launch value stands in until it answers, and the launch
   values in preview. Numbers are `site.docs.examples` in the launch number format.
+- **The number rules on `/docs` are the registry's too (2026-10-05, the user's words: "it must
+  read from chain").** The length, the check digit, the shortest number, how many numbers have
+  that length, the Check digit section and the roadmap's "Numbers from" come from the Numbers
+  namespace onchain (`NumberRules`, `NumberNotes`, `CheckDigit`, `ShortestLength`). Before, they
+  were the launch config, so the page said 2 to 12 digits while Base Sepolia sold 4 to 6. The
+  example numbers stay fixed: they show the format, and may fall outside what is sold today.
 - The code it prints (`components/docs/samples.js`) names the configured chain and registry.
   Every sample was run against the current build on a local chain: `resolve` answers the zero
   address from the moment the term ends, while `lookup` names the holder through the grace
@@ -728,7 +766,7 @@ fixes and a second check.
   when it names something else. It works because the search writes the address with
   `history.replaceState(null, …)`: Next.js syncs `useSearchParams` with that call, and skips a
   call that passes its own `history.state`, as one version did.
-- **Copy link shares the name's page since 2026-10-03** (`/names/+0-4242`), part of the growth
+- **Copy link shares the name's page since 2026-10-03** (`/names/+04242`), part of the growth
   work the user asked for: a path reaches the server, so the link's preview shows the name
   (`app/names/[name]/opengraph-image.jsx`, drawn from the path alone). The address bar follows
   the search with `/?q=4242`.
@@ -775,7 +813,8 @@ fixes and a second check.
 ## A page for each name (2026-10-02)
 
 - The user asked for "another page to show details instead of showing in modals". Each name
-  has `/names/<name>`: `/names/+0-4242-1230` (a number's groups joined by dashes) or
+  has `/names/<name>`: `/names/+042421230` (the prefix and the digits joined, since
+  2026-10-05) or
   `/names/alice.arc`, built by `namePath` (`lib/namespaces.js`) and read back by the search's
   own parser. `components/names/NamePage` shows the NFT, the holder, where it points and the
   expiry for anyone, and for the holder of a live name every change in a section of its own:
@@ -873,7 +912,10 @@ as deployed.
   in its encrypted blob, the card warns when the number points elsewhere, and `?add=+04242`
   invites work (`lib/readableName.js`, `hooks/useReadablePin.js`). Hup: a profile shows the
   wallet's primary number (`components/ReadableNumber.jsx`). Both read readable.name's API
-  (`NEXT_PUBLIC_READABLE_API`). Neither repo is committed.
+  (`NEXT_PUBLIC_READABLE_API`). Both pushed to `main` on 2026-10-05 (Tunnel `36128e0`, Hup
+  `2c4f3f5f`). They call the API from the browser, so it must answer on the origin they name
+  without a redirect: on 2026-10-05 `readable.name` sent a 308 to `www` with no CORS header,
+  and every call failed (the user was moving the site to the apex on Vercel).
 - Proven on a fork of Base Sepolia by `tests/e2e/reach.mjs` (30 checks, see Local end-to-end).
   Not proven there: a real X or GitHub proof (the negative path and the signature are), the
   onramp (no testnet), a smart wallet's batch through a live paymaster (the guard is), Tunnel
@@ -962,18 +1004,73 @@ as deployed.
   16 record fields where it expected 15. Fixed, not run again on a fresh chain. `nft.mjs`,
   `gasless.mjs` and `reach.mjs` were not run.
 
+## State on 2026-10-05
+
+- **The review before mainnet (2026-10-05, the user's request) fixed one thing**, approved by the
+  user: a name without an editor stores address(0), so a trusted forwarder that let a request
+  through as address(0) (as a hand-written `ecrecover` does on a bad signature) passed for the
+  editor of every such name and could change its target, records and addresses.
+  `_requireActiveHolder` now ignores an unset editor. Hup's forwarders were never open to it:
+  OpenZeppelin's signature checks never name address(0). Held by `ThirdReviewTest` in
+  `test/Findings.t.sol`. Nothing else new was found; the open findings stand as listed.
+- **269 forge tests pass**, 1 skipped; the Base fork suite (7) passes against Base. `Readable`
+  **20,288 bytes (4,288 under the limit)**; `NameRules` unchanged (5,058). The ABI is unchanged.
+  Artifacts and the frozen verification inputs are rebuilt from this source.
+- **The user's order: deploy on Base, test there, then deploy on Robinhood Chain (4663).** The
+  deploy page knows Robinhood Chain: its RPCs, Blockscout and Hup's forwarder there,
+  `0xf5e4d19c9de1323dfF4fd85822Ca7A3582035e76` (OpenZeppelin 5.6's `ERC2771Forwarder` unchanged,
+  an exact match on Sourcify, typed data only, deployed by the user's wallet, signing name
+  `HupForwarder`, trusted by Hup there). Base's forwarder `0xae95…4567` was created by nonce 19 of
+  the user's wallet, so nothing can ever be at that address on Robinhood Chain. Both contracts'
+  init code was run there by `eth_call` and gives this build's runtime; the CREATE2 factory is
+  there; the native coin is ETH; Sourcify supports the chain.
+- With the default salt and the user's wallet `0x20e2…C50e` as `initialOwner`, `Readable` lands at
+  `0x5322F840e3AafD07EE2d1DCb9677951C7C26370f` on Base and
+  `0x8085d2351F5Bb3675549683495134fc9B4D8A2F9` on Robinhood Chain (the forwarder differs);
+  `NameRules` at `0x9b701f64690234c199d58f54913B1b1fE3096834` on both. Another owner gives
+  another `Readable` address.
+- That wallet is an EIP-7702 account with one key (delegated to `0x63c0…e32b`). The owner can
+  replace the forwarder and so redirect every live name, so a Safe was recommended as the
+  owner: set up from the wallet on `/admin`, then offer ownership to the Safe and accept it there.
+- The app itself still knows Base alone (`config/chains.js`): Robinhood Chain needs adding there
+  before the site can point at a registry on it.
+- **Deployed on Base Sepolia by the user (2026-10-05):** `Readable` at
+  `0xAC71c7Ac9b7f5a4a65e9c5E40Bae146975E76e45` (block 47,732,543), owner `0x20e2…C50e`, the Hup
+  forwarder `0x18B8…0A80`, runtime identical to this build. `NameRules` at `0x9b70…6834` was
+  already there, deployed through the factory by `0xb01c…9c2e` (block 47,682,980): it has no
+  owner or state and its runtime is this build's, so who sent it doesn't matter. Neither is
+  set up (no namespaces, no name rules, no NFT link) or verified. Their verification inputs
+  are in `deploy/verification/deployed/84532-<address>.json`; `.env.local` and
+  `packages/sdk/src/registry.js` point at the new `Readable`. `0x7c63…97D6` is left as it is.
+
+## State on 2026-10-06
+
+- **Deployed on Robinhood Chain by the user:** `Readable` at
+  `0x8085d2351F5Bb3675549683495134fc9B4D8A2F9` (block 81,103,476), owner `0x20e2…C50e`, Hup's
+  forwarder `0xf5e4…5e76`; `NameRules` at `0x9b701f64690234c199d58f54913B1b1fE3096834`. Both
+  runtimes are this build's, byte for byte. Not set up (no namespaces, no name rules, no NFT
+  link) and not verified. Verification inputs are `deploy/verification/deployed/4663-<address>.json`.
+  Deployed without the professional audit the mainnet plan had first.
+- `.env.local` points at it (chain 4663, the address, `NEXT_PUBLIC_READABLE_FROM_BLOCK`), and
+  so does the SDK. The production server needs the same three values. The dev server on 3005
+  served it: `/docs` names it, `/api/activity`, `/api/agents` and `/api/reverse` answer, and the
+  SDK with no options reads it.
+- Base Sepolia's deployments (`0xAC71…6e45`, `0x7c63…97D6` and the ones before) are left on that
+  chain; their verification inputs were deleted, and the committed ones are in git history.
+
 ## Pending
 
 - **Mainnet, in this order (2026-09-30):** a professional audit of `Readable.sol` and
   `NameRules.sol` first. Then, from the owner wallet on the deploy page: deploy `Readable`
-  (the Base forwarder is prefilled) and `NameRules`; ask the user before verifying either on
-  the explorer; copy `deploy/verification/Readable.json` and `NameRules.json` to
-  `deploy/verification/deployed/8453-<address>.json`. On `/admin`: Numbers at the final prices
+  (the chain's Hup forwarder is prefilled) and `NameRules`; ask the user before verifying either
+  on the explorer; copy `deploy/verification/Readable.json` and `NameRules.json` to
+  `deploy/verification/deployed/<chainId>-<address>.json`. On `/admin`: Numbers at the final prices
   (in ETH), the NFT data link `https://readable.name/nft/`; name
   rules and the first extension only when usernames launch. On the server: `.env.local` with
   the chain, the address, a private RPC and `RELAYER_PRIVATE_KEY` of a fresh wallet funded
-  with a little ETH; the site origin allowed for the WalletConnect project. Rehearse the same
-  on Base Sepolia first, on a new deployment of the current build: `0x7c63…97D6` has no editors.
+  with a little ETH; the site origin allowed for the WalletConnect project. **Since 2026-10-06
+  the registry is deployed on Robinhood Chain** (see that day's state): what is left is the
+  setup on `/admin`, verification (ask the user first) and the server's env.
 - Which fields an extension's metadata should carry beyond label, title and about.
 - Final prices.
 - Ideas raised and not decided: a falling premium on released names and a commit step against
@@ -981,7 +1078,7 @@ as deployed.
 - Showing a name's records where it is looked up (the search card shows the owner only).
 - Set the NFT data link after deploying; until then wallets show no title or image.
 - Gasless in production: a relayer wallet of its own, its key in `RELAYER_PRIVATE_KEY` on the
-  server, funded with ETH on Base. `GET /api/relay` tells its address and balance. Until then a
+  server, funded with ETH on Robinhood Chain. `GET /api/relay` tells its address and balance. Until then a
   holder's changes go out as ordinary transactions.
 - Idea: a number assigned at signup. It would have to be granted by the owner or paid for by the
   app, since no number is free.
@@ -999,18 +1096,19 @@ as deployed.
 
 ## Local end-to-end
 
-1. `anvil --fork-url https://base-sepolia-rpc.publicnode.com --chain-id 84532`: a local copy of
-   Base Sepolia, so the forwarder and the CREATE2 factory are the real ones.
+1. `anvil --fork-url https://rpc.mainnet.chain.robinhood.com --chain-id 4663`: a local copy of
+   Robinhood Chain, so the forwarder and the CREATE2 factory are the real ones (since
+   2026-10-06; every run before forked Base Sepolia, and none has run on this fork yet).
 2. `node tests/e2e/fund.mjs` sets the buyer's balance back to 10,000 ETH. Then
    `node tests/e2e/deploy.mjs` deploys the registry and the name rules through deploy.html. XAMPP must serve htdocs; the page is
    at http://localhost/readable/contracts/deploy/deploy.html.
-3. `.env.local` with `NEXT_PUBLIC_READABLE_CHAIN_ID=84532`,
-   `NEXT_PUBLIC_READABLE_ADDRESS=<printed address>`,
+3. `.env.local` with `NEXT_PUBLIC_READABLE_CHAIN_ID=4663`,
+   `NEXT_PUBLIC_READABLE_ADDRESS=<printed address>`, `NEXT_PUBLIC_READABLE_FROM_BLOCK=<the fork's block>`,
    `NEXT_PUBLIC_READABLE_RPC=http://127.0.0.1:8545` and `NEXT_PUBLIC_BASE_URL=<the app's origin>` (the
    NFT data link is built from it), then `pnpm dev`.
 4. `node tests/e2e/launch.mjs`: as the owner on `/admin`, follows the setup guide: Numbers at the
    launch prices in ETH. With `E2E_OWNER=<address>` and that address impersonated
-   (`anvil_impersonateAccount`), it rehearses a registry already deployed on Base Sepolia.
+   (`anvil_impersonateAccount`), it rehearses a registry already deployed on the chain forked.
    Then `node tests/e2e/app.mjs`: connects a wallet and registers `+0 4242` for two years.
 5. `node tests/e2e/admin.mjs`: as the owner, sets the name rules, adds `.arc`, reprices, reserves (numbers
    too), grants, pauses and resumes, sets a treasury and the NFT data link, then checks the
@@ -1074,7 +1172,7 @@ as deployed.
 - `build-artifacts.mjs` overwrites `deploy/verification/Readable.json`. After a deployment, copy
   that file to `deploy/verification/deployed/<chainId>-<address>.json` before the next build, or
   the input that verifies the deployed bytes is gone.
-- `.env.local` holds the user's Base Sepolia settings. Copy it aside before an end-to-end run
+- `.env.local` holds the user's Robinhood Chain settings. Copy it aside before an end-to-end run
   and put it back after, instead of deleting it as step 10 says.
 - The relayer key of the end-to-end run is Anvil's third account, a public key: never fund it
   on a real chain. On the fork it shows 1,207 earlier transactions, because others use it too.
@@ -1089,11 +1187,11 @@ as deployed.
   `sendRegistryCall` in `lib/registryActions.js` now runs every call before the wallet signs, and
   `paymentError` names a version mismatch when the refusal carries no reason. After any change to
   `register` or `renew`, redeploy and update `NEXT_PUBLIC_READABLE_ADDRESS`.
-- The first build of `NameRules` is on Base Sepolia at its CREATE2 address
-  (`0x037FA3784CF157c2c1c935250467541C7B29e01b`), so a fork inherits it. `deploy.mjs` reuses
-  a copy already at the current build's address (no constructor argument, no state); it used to
-  wait for the address to be empty and timed out. Both builds answer `version()` with 1.0.0,
-  so tell them apart by address, not by version.
+- The current `NameRules` is on Robinhood Chain at its CREATE2 address (`0x9b70…6834`), so a
+  fork inherits it. `deploy.mjs` reuses a copy already at the current build's address (no
+  constructor argument, no state); it used to wait for the address to be empty and timed out.
+  Its first build (`0x037F…e01b`, Base Sepolia only) also answers `version()` with 1.0.0, so
+  tell builds apart by address, not by version.
 - `admin.mjs` timed out waiting for the reserved labels on the `.arc` card (2026-10-02). Cause,
   found 2026-10-03: the refresh after the reservation read events up to a block number viem had
   cached from before it, and nothing refreshed again. Fixed in `lib/events.js`.

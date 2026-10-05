@@ -10,9 +10,9 @@ npm install readable-sdk viem
 
 ```js
 import { createReadable } from 'readable-sdk'
-import { baseSepolia } from 'viem/chains'
 
-const readable = createReadable({ chain: baseSepolia })
+// Robinhood Chain, where the registry lives
+const readable = createReadable()
 
 await readable.resolve('+0 42421230')         // '0x…', or null when it reaches nobody
 await readable.getAddress('+0 4242', 'btc')   // 'bc1q…', or null
@@ -42,8 +42,8 @@ An agent that speaks MCP can skip the SDK: readable.name serves an MCP server at
 
 | Option | Default | |
 |---|---|---|
-| `chain` | Base | A viem chain or its id. |
-| `registry` | The known registry of that chain | Needed for Base until mainnet launches. |
+| `chain` | Robinhood Chain | A viem chain or its id. |
+| `registry` | The known registry of that chain | Needed for a chain the SDK doesn't know. |
 | `rpc` | The chain's public RPC | Use your own in production. |
 | `client` | | A viem public client to read through, in place of `rpc`. |
 | `cacheMs` | 5 minutes | How long the list of namespaces is kept. |

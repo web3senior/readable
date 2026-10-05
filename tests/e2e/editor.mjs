@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { createPublicClient, http, isAddressEqual, zeroAddress } from 'viem'
 import { APP, BUYER, EDITOR, LONG_NUMBER, RPC, ethOf, launch, registryAbi, registryAddress, shotsDir, walletShim } from './setup.mjs'
 
-const PAGE = `${APP}/names/${LONG_NUMBER.replace(' ', '-')}`
+const PAGE = `${APP}/names/${LONG_NUMBER.replace(' ', '')}`
 const NOTE = 'You edit this name for its holder'
 
 const client = createPublicClient({ transport: http(RPC) })

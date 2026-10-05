@@ -53,3 +53,7 @@ export const registryFacts = ({ namespaces, currency, gracePeriod }) => ({
 })
 
 export const extensionsOf = (facts) => facts.namespaces.filter((namespace) => namespace.kind === KIND.NAME)
+
+/** The launch numbers as `facts` state them: the registry's rules once it holds them. */
+export const numbersOf = (facts) =>
+  facts.namespaces.find((namespace) => namespace.kind === KIND.NUMBER && namespace.name === launchNumbers.name) ?? launchNumbers

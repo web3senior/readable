@@ -17,9 +17,11 @@ The script writes `artifacts/Readable.json` (picked in the page), `../../src/abi
 so a later verification publishes exactly the deployed bytes). The picker dates each artifact by
 its file time; a `.sol` edited after that stamp means rebuild first.
 
-## Deploy on Base
+## Deploy on Robinhood Chain
 
-Rehearse on Base Sepolia (84532) first, then repeat on Base (8453).
+The registry lives on Robinhood Chain (4663). Rehearse on a local fork of it first (see
+`tests/e2e/setup.mjs`). Each chain has its own Hup forwarder, so `Readable` lands at a different
+address on each.
 
 1. Connect the wallet that will own the registry.
 2. Pick **Readable**. `initialOwner` fills with the connected wallet (it must be explicit: through

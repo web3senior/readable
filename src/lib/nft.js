@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { KIND } from '@/config/namespaces'
 import { registry, registryEnabled } from '@/config/registry'
 import { site } from '@/config/site'
@@ -49,16 +51,33 @@ export const nftMetadata = ({ tokenId, namespace, name, length, record }) => ({
   ],
 })
 
-/** The name on the brand color, with the site's name beneath it. */
-export function nftImage({ name }) {
-  const { size, radius, background, ink, font, weight, brandSize, brandOpacity, steps } = nft.art
+/**
+ * The backdrop's markup, read from public/ on each request so an edit shows at once. Its root
+ * is made to fill the image's square, and its own viewBox scales it to any size it was drawn at.
+ */
+async function readBackdrop() {
+  const markup = await readFile(join(process.cwd(), 'public', nft.art.backdrop.file), 'utf8')
+  return markup
+    .replace(/<\?xml[^>]*\?>\s*/, '')
+    .replace(/<svg\b[^>]*>/, (root) =>
+      root
+        .replace(/\s(width|height|preserveAspectRatio)="[^"]*"/g, '')
+        .replace('<svg', '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid slice"')
+    )
+}
+
+/** The name on the backdrop, with the site's name beneath it. */
+export async function nftImage({ name }) {
+  const { size, radius, backdrop, font, weight, brandSize, brandOpacity, steps } = nft.art
+  const { ink } = backdrop
   const characters = graphemeLength(name)
   const fontSize = steps.find((step) => characters <= step.length).size
   const center = size / 2
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`,
-    `<rect width="${size}" height="${size}" rx="${radius}" fill="${background}"/>`,
+    `<clipPath id="corners"><rect width="${size}" height="${size}" rx="${radius}"/></clipPath>`,
+    `<g clip-path="url(#corners)">${await readBackdrop()}</g>`,
     `<text x="${center}" y="${center}" dominant-baseline="central" text-anchor="middle" font-family="${font}" font-weight="${weight}" font-size="${fontSize}" fill="${ink}">${escapeXml(name)}</text>`,
     `<text x="${center}" y="${size - radius}" text-anchor="middle" font-family="${font}" font-size="${brandSize}" fill="${ink}" fill-opacity="${brandOpacity}">${escapeXml(site.name)}</text>`,
     '</svg>',

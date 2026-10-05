@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react'
 import { isAddressEqual } from 'viem'
-import { ArrowLineDownIcon, ArrowSquareOutIcon, RobotIcon, WarningIcon } from '@phosphor-icons/react'
+import { ArrowLineDownIcon, ArrowSquareOutIcon, PlusCircleIcon, RobotIcon, WarningIcon } from '@phosphor-icons/react'
 import AddressAvatar from '@/components/ui/AddressAvatar'
 import Button from '@/components/ui/Button'
 import CopyButton from '@/components/ui/CopyButton'
@@ -33,6 +33,8 @@ export default function AgentWallet({ name, wallet, account, currency, expired =
   const fill = (text, amount) => text.replaceAll('{name}', name.display).replaceAll('{amount}', amount ?? '')
   const pointed = isAddressEqual(name.target, wallet)
   const holds = data ? data.balance > 0n : false
+  // Read and not set up yet. An expired name's holder only moves out, which sets it up anyway
+  const unset = Boolean(data) && !data.ready && !expired
   const explorer = explorerFor(registry.chainId)
 
   if (expired && !holds) return null
@@ -59,14 +61,20 @@ export default function AgentWallet({ name, wallet, account, currency, expired =
       })
     )
 
+  // Deploys and initializes it; resolves with whether that confirmed
+  const setUp = async () => {
+    const created = await setUpTokenBound(name.tokenId, data)
+    const done = await trackAdmin(created, { pending: fill(copy.creating), done: fill(copy.createdDone) })
+    onChange()
+    return done
+  }
+
+  // Before anything is sent to it, or when it holds only tokens, which Move doesn't cover
+  const create = () => run('create', setUp)
+
   const move = () =>
     run('move', async () => {
-      if (!data.ready) {
-        const created = await setUpTokenBound(name.tokenId, data)
-        const done = await trackAdmin(created, { pending: fill(copy.creating), done: fill(copy.createdDone) })
-        onChange()
-        if (!done) return
-      }
+      if (!data.ready && !(await setUp())) return
       const amount = formatBalance(data.balance, currency)
       const sent = await sendFromTokenBound({ account: wallet, to: account, value: data.balance })
       trackAdmin(sent, { pending: fill(copy.moving, amount), done: fill(copy.moved, amount) }).then((success) => success && onChange())
@@ -136,6 +144,11 @@ export default function AgentWallet({ name, wallet, account, currency, expired =
             {fill(copy.move, formatBalance(data.balance, currency))}
           </Button>
         )}
+        {unset && (
+          <Button variant="secondary" icon={<PlusCircleIcon size={16} />} loading={busy === 'create'} disabled={Boolean(busy)} onClick={create}>
+            {copy.create}
+          </Button>
+        )}
         {explorer && (
           <Button variant="link" size="sm" href={`${explorer}/address/${wallet}`} icon={<ArrowSquareOutIcon size={14} />}>
             {copy.explorer}
@@ -143,6 +156,7 @@ export default function AgentWallet({ name, wallet, account, currency, expired =
         )}
       </div>
       {holds && <p className={styles.wallet__note}>{data.ready ? copy.fee : copy.createNote}</p>}
+      {unset && !holds && <p className={styles.wallet__note}>{copy.createFee}</p>}
     </section>
   )
 }

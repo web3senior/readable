@@ -1,5 +1,5 @@
 import { zeroHash } from 'viem'
-import { base, baseSepolia } from 'viem/chains'
+import { base, robinhood } from 'viem/chains'
 
 /**
  * A wallet of a name's own (ERC-6551): an account whose owner is whoever holds the name's NFT,
@@ -9,7 +9,8 @@ import { base, baseSepolia } from 'viem/chains'
  * proxy on Base all used salt 0), so apps that show token-bound accounts find the same wallet.
  * A new account runs nothing until it is initialized with AccountV3, which anyone may do once and
  * with no other implementation (Tokenbound's guardian decides which it takes), so the two are
- * sent together. Each checked onchain on Base and Base Sepolia, and on a fork, 2026-10-04.
+ * sent together. Each checked onchain on Base and on a fork, 2026-10-04, and on Robinhood
+ * Chain, 2026-10-06.
  */
 export const tokenBound = {
   registry: '0x000000006551c19487814612e58FE06813775758',
@@ -21,7 +22,7 @@ export const tokenBound = {
   // ERC-1967's slot, where the proxy keeps what it runs: empty until initialized
   implementationSlot: '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc',
   // Where both are deployed. Elsewhere a name has no wallet of its own
-  chainIds: [base.id, baseSepolia.id],
+  chainIds: [base.id, robinhood.id],
   registryAbi: [
     {
       type: 'function',

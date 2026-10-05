@@ -1,6 +1,7 @@
+import { permanentRedirect } from 'next/navigation'
 import NamePage from '@/components/names/NamePage'
 import { site } from '@/config/site'
-import { nameFromSlug } from '@/lib/namespaces'
+import { movedNamePath, nameFromSlug } from '@/lib/namespaces'
 import styles from '../page.module.scss'
 
 // Written from the path alone, so a link preview never waits for the chain. The picture is
@@ -18,9 +19,12 @@ export async function generateMetadata({ params }) {
   }
 }
 
-// The page is sent at once; the name is read in the browser
+// The page is sent at once; the name is read in the browser. A number's older link, with dashes
+// (`/names/+0-4242-1230`), moves to the path the site writes now (`/names/+042421230`)
 export default async function NameDetailPage({ params }) {
   const { name } = await params
+  const moved = movedNamePath(name)
+  if (moved) permanentRedirect(moved)
   return (
     <main className={styles.page}>
       <div className={styles.page__container}>

@@ -4,6 +4,8 @@ import { home } from '@/config/chains'
 export const registry = {
   address: process.env.NEXT_PUBLIC_READABLE_ADDRESS || null,
   chainId: home.id,
+  // The block it was deployed in, where reading its events from the chain starts
+  fromBlock: BigInt(process.env.NEXT_PUBLIC_READABLE_FROM_BLOCK || 0),
   abi,
   // Mirrors Readable.MAX_YEARS
   maxYears: 10,

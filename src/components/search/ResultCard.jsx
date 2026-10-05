@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { isAddressEqual, zeroAddress } from 'viem'
 import { useConnection } from 'wagmi'
-import { CloudSlashIcon, PaperPlaneTiltIcon, StorefrontIcon, WarningCircleIcon } from '@phosphor-icons/react'
+import { CloudSlashIcon, PaperPlaneTiltIcon, StorefrontIcon, WarningCircleIcon, XLogoIcon } from '@phosphor-icons/react'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import CopyButton from '@/components/ui/CopyButton'
@@ -43,6 +43,14 @@ const STATUS = {
 const REASON_STATUSES = new Set(['invalid', 'reserved', 'paused'])
 
 const sameAddress = (a, b) => Boolean(a && b) && isAddressEqual(a, b)
+
+const { shareOnX } = site.search
+
+// A post on X about a name just registered, with a link to its page on the site the visitor is on
+const postAbout = (name, page) =>
+  shareOnX.url
+    .replace('{text}', encodeURIComponent(shareOnX.text.replace('{name}', name).replace('{site}', site.name)))
+    .replace('{url}', encodeURIComponent(`${window.location.origin}${page}`))
 
 const statusOf = (candidate, lookup) => {
   if (!candidate.checkable) return 'invalid'
@@ -111,7 +119,7 @@ function AvailableBody({ data, onRegister }) {
   )
 }
 
-function TakenBody({ data, candidate, isYours, onRenew, onPay, onPick, page }) {
+function TakenBody({ data, candidate, isYours, onRenew, onPay, onPick, page, share }) {
   const { owner, ownerName, target, expiresAt, expired, tokenId } = data
   const pointsElsewhere = target && target !== zeroAddress && !sameAddress(target, owner)
   // Someone else's name: free numbers beside it, and the way to its holder through a marketplace
@@ -138,6 +146,11 @@ function TakenBody({ data, candidate, isYours, onRenew, onPay, onPick, page }) {
           <Button size="lg" block href={page}>
             Manage
           </Button>
+          {share && (
+            <Button variant="secondary" size="lg" block href={share} icon={<XLogoIcon size={16} />}>
+              {shareOnX.label}
+            </Button>
+          )}
           <Button variant="secondary" size="lg" block onClick={onRenew}>
             Renew
           </Button>
@@ -213,6 +226,8 @@ export default function ResultCard({ candidate, onAbout, onPick }) {
   const openWalletDialog = useWalletDialog()
   const paymentRef = useRef(null)
   const payRef = useRef(null)
+  // The name this card registered, so the card can offer to share it once it reads as yours
+  const [registered, setRegistered] = useState(null)
 
   const status = statusOf(candidate, lookup)
   const { label, tone } = STATUS[status] ?? STATUS.error
@@ -223,6 +238,7 @@ export default function ResultCard({ candidate, onAbout, onPick }) {
   const sendable = status === 'taken' && !isYours && !data.expired && data.target !== zeroAddress
   const named = candidate.valid || status === 'taken'
   const page = named ? namePath(namespace, candidate.label) : null
+  const share = isYours && registered === candidate.name ? postAbout(candidate.name, page) : null
 
   // Paying needs a wallet: without one the same button opens the picker instead
   const openPayment = () => (isConnected ? paymentRef.current?.open() : openWalletDialog())
@@ -277,6 +293,7 @@ export default function ResultCard({ candidate, onAbout, onPick }) {
             onPay={sendable ? openPay : null}
             onPick={onPick}
             page={page}
+            share={share}
           />
         )}
         {status === 'soon' && <SoonBody data={data} namespace={namespace} />}
@@ -301,6 +318,7 @@ export default function ResultCard({ candidate, onAbout, onPick }) {
           tokenId={data.tokenId}
           pricePerYear={data.pricePerYear}
           currency={data.currency}
+          onDone={status === 'available' ? () => setRegistered(candidate.name) : undefined}
         />
       )}
     </article>

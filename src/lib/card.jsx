@@ -3,8 +3,8 @@ import { site } from '@/config/site'
 import { graphemeLength } from '@/lib/query/text'
 
 /**
- * The picture a shared link shows: the name large on the brand color, as the NFT draws it, with
- * the site's name and tagline. An image can't read CSS variables, so its colors are the NFT's.
+ * The picture a shared link shows: the name large on the brand color, with the site's name and
+ * tagline. An image can't read CSS variables, so its colors are set in `site.nft.art`.
  */
 
 const { background, ink, brandOpacity } = site.nft.art

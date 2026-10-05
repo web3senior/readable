@@ -1,7 +1,7 @@
 // Reads back, through the SDK (packages/sdk) and the site's API built on it, what names.mjs saved
 // on +0 4343: the wallet it points to, its Bitcoin and Solana addresses, its records and the
 // buyer's primary name. Run it after names.mjs.
-import { baseSepolia } from 'viem/chains'
+import { robinhood } from 'viem/chains'
 import { isAddressEqual } from 'viem'
 import { createReadable } from '../../packages/sdk/src/index.js'
 import { APP, BUYER, LONG_NUMBER, OTHER, RPC, registryAddress } from './setup.mjs'
@@ -19,7 +19,7 @@ const expect = (label, actual, wanted) => {
   if (!same) problems.push(label)
 }
 
-const readable = createReadable({ chain: baseSepolia, registry: registryAddress(), rpc: RPC })
+const readable = createReadable({ chain: robinhood, registry: registryAddress(), rpc: RPC })
 
 expect('resolve +0 4343', await readable.resolve('+0 4343'), (value) => value && isAddressEqual(value, OTHER))
 expect('resolve written another way', await readable.resolve('43-43'), (value) => value && isAddressEqual(value, OTHER))

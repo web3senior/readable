@@ -105,7 +105,7 @@ const parseRecords = (text) => {
 /**
  * A reader of the Readable registry.
  *
- *   const readable = createReadable({ chain: baseSepolia })
+ *   const readable = createReadable()
  *   await readable.resolve('+0 42421230')        // '0x…', or null when it reaches nobody
  *   await readable.getAddress('+0 4242', 'btc')  // 'bc1q…'
  *   await readable.getRecords('+0 4242')         // { name, job, social: { x }, … }
@@ -114,13 +114,13 @@ const parseRecords = (text) => {
  *   await readable.getAgent('+0 247')            // { endpoint, erc8004, payment }, or null
  *
  * @param {object} [options]
- * @param {object|number} [options.chain] A viem chain or its id. Base by default.
+ * @param {object|number} [options.chain] A viem chain or its id. Robinhood Chain by default.
  * @param {string} [options.registry] The registry's address, for a chain the SDK doesn't know.
  * @param {string} [options.rpc] An RPC URL. The chain's public one by default.
  * @param {object} [options.client] A viem public client to read through, in place of `rpc`.
  * @param {number} [options.cacheMs] How long the list of namespaces is kept. Five minutes by default.
  */
-export function createReadable({ chain = 8453, registry, rpc, client, cacheMs = 5 * 60_000 } = {}) {
+export function createReadable({ chain = 4663, registry, rpc, client, cacheMs = 5 * 60_000 } = {}) {
   const viemChain = typeof chain === 'object' ? chain : chains[chain]
   if (!viemChain) throw new Error(`Unknown chain ${String(chain)}: pass a viem chain`)
   const address = registry ?? registries[viemChain.id]

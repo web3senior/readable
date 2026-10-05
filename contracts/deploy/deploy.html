@@ -206,17 +206,17 @@
       5042: ["https://rpc.mainnet.arc.io", "https://arc.drpc.org", "https://5042.rpc.thirdweb.com"],
       5042002: ["https://rpc.testnet.arc.network"],
       8453: ["https://base-rpc.publicnode.com", "https://mainnet.base.org"],
-      84532: ["https://base-sepolia-rpc.publicnode.com", "https://base-sepolia.drpc.org"],
+      4663: ["https://rpc.mainnet.chain.robinhood.com", "https://4663.rpc.thirdweb.com"],
     };
 
     // Fee bumps per chain; empty means every chain takes the defaults
     const PRIORITY = {};
 
     const CHAIN_NAMES = {
-      1: "Ethereum", 42: "LUKSO", 5042: "Arc", 5042002: "Arc Testnet", 8453: "Base", 84532: "Base Sepolia",
+      1: "Ethereum", 42: "LUKSO", 5042: "Arc", 5042002: "Arc Testnet", 8453: "Base", 4663: "Robinhood Chain",
     };
 
-    const CHAIN_SYMBOLS = { 1: "ETH", 42: "LYX", 5042: "USDC", 5042002: "USDC", 8453: "ETH", 84532: "ETH" };
+    const CHAIN_SYMBOLS = { 1: "ETH", 42: "LYX", 5042: "USDC", 5042002: "USDC", 8453: "ETH", 4663: "ETH" };
 
     const DEFAULT_SALT_LABEL = "readable";
     const DEFAULT_SALT = ethers.id(DEFAULT_SALT_LABEL);
@@ -231,9 +231,10 @@
     // Known constructor values per chain; an empty entry falls back to signerArgs or stays blank
     const CTOR_DEFAULTS = {
       Readable: {
-        // Hup forwarders, rotatable with setTrustedForwarder
+        // Hup forwarders, rotatable with setTrustedForwarder. Each is OpenZeppelin's ERC2771Forwarder
+        // at its own address: Base's was created by nonce, so Robinhood Chain's could not match it
         8453: ["", "0xae95e44D2642F568D0e0Fc0d60202B55c8764567"],
-        84532: ["", "0x18B86518709a6C0942F3adCD0CD528D1716e0A80"],
+        4663: ["", "0xf5e4d19c9de1323dfF4fd85822Ca7A3582035e76"],
         5042: ["", "0xc407722d150c8a65e890096869f8015D90a89EfD"],
       },
     };
@@ -520,6 +521,7 @@
     // Blockscout explorers with a verification API; Sourcify covers the rest
     const BLOCKSCOUT = {
       8453: "https://base.blockscout.com",
+      4663: "https://robinhoodchain.blockscout.com",
     };
     const ETHERSCAN_KEY_STORAGE = "readable-deploy-etherscan-key";
 

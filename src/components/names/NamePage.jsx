@@ -41,7 +41,7 @@ const { path: NFT_PATH, art: NFT_ART } = site.nft
 const { gates } = site.names
 const { profile } = site
 
-// A path segment as it was typed, with the dashes the link puts between digit groups
+// A path segment as it was typed: `+042421230` or `alice.arc`
 const readSlug = (slug) => {
   try {
     return decodeURIComponent(slug)

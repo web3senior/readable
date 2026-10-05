@@ -41,7 +41,7 @@ await page.waitForFunction((chainId) => document.querySelector('#walletInfo').te
 
 const registry = await deploy('Readable', 2)
 // The name rules take no constructor argument and keep no state, so a copy of this build already
-// at its address (on Base Sepolia, which a fork inherits) is the same contract
+// at its address (on Robinhood Chain, which a fork inherits) is the same contract
 const rules = await deploy('NameRules', 0, { taken: [registry], reuse: true })
 
 await page.screenshot({ path: join(shotsDir, 'deploy.png'), fullPage: true })

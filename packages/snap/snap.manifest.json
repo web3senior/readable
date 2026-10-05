@@ -3,7 +3,7 @@
   "description": "Send to a readable.name number or name: +0 4242 1230 resolves to the wallet it points to.",
   "proposedName": "Readable",
   "source": {
-    "shasum": "r2aufUycrbzszcESppdyv4ot5gWpH/41kX/ADVeH9AU=",
+    "shasum": "7q/ywqxcTBFKQowx6ZJ4E7TsQ0y56SvOLXqrIqCEpYk=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -18,7 +18,7 @@
       "chains": [
         "eip155:1",
         "eip155:8453",
-        "eip155:84532",
+        "eip155:4663",
         "eip155:10",
         "eip155:42161",
         "eip155:137",

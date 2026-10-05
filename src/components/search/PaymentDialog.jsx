@@ -37,9 +37,9 @@ const COPY = {
 
 /**
  * Pays for a register or renew, the exact price in ETH from the connected wallet. Closes as soon as the wallet signs; the toast carries the
- * transaction to its verdict and outlives the card.
+ * transaction to its verdict and outlives the card. `onDone` hears of a payment confirmed onchain.
  */
-const PaymentDialog = forwardRef(function PaymentDialog({ action, candidate, tokenId, pricePerYear, currency }, ref) {
+const PaymentDialog = forwardRef(function PaymentDialog({ action, candidate, tokenId, pricePerYear, currency, onDone }, ref) {
   const titleId = useId()
   const dialogRef = useRef(null)
   const queryClient = useQueryClient()
@@ -84,6 +84,7 @@ const PaymentDialog = forwardRef(function PaymentDialog({ action, candidate, tok
           report(progress, success ? copy.done(candidate.name) : `${copy.title} failed onchain`, success ? 'success' : 'error')
           queryClient.invalidateQueries({ queryKey: ['lookup', candidate.namespace.id] })
           queryClient.invalidateQueries({ queryKey: ['names'] })
+          if (success) onDone?.()
         })
         .catch((error) => report(progress, paymentError(error), 'error'))
     } catch (error) {

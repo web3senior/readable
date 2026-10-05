@@ -1,7 +1,7 @@
 // Shared setup for the local end-to-end scripts. Every path can be overridden from the environment.
-// They run against a local fork of Base Sepolia, so the forwarder and the deploy factory are the
+// They run against a local fork of Robinhood Chain, so the forwarder and the deploy factory are the
 // real ones:
-//   anvil --fork-url https://base-sepolia-rpc.publicnode.com --chain-id 84532
+//   anvil --fork-url https://rpc.mainnet.chain.robinhood.com --chain-id 4663
 import { mkdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
@@ -9,7 +9,7 @@ export const RPC = process.env.E2E_RPC ?? 'http://127.0.0.1:8545'
 export const APP = process.env.E2E_APP ?? 'http://localhost:3005'
 export const DEPLOY_PAGE = process.env.E2E_DEPLOY_PAGE ?? 'http://localhost/readable/contracts/deploy/deploy.html'
 
-export const CHAIN_ID = 84532
+export const CHAIN_ID = 4663
 // Names are paid in ETH. The placeholder prices are dollars at 4,000 dollars an ETH, so a dollar
 // is this many wei
 export const DOLLAR = 250_000_000_000_000n

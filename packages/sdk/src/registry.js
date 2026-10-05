@@ -1,11 +1,22 @@
-import { base, baseSepolia } from 'viem/chains'
+import { defineChain } from 'viem'
 
-/** The chains Readable lives on, by id. Base is its home; Base Sepolia is where it is rehearsed. */
-export const chains = { [base.id]: base, [baseSepolia.id]: baseSepolia }
+// Robinhood Chain as viem defines it, written out because the viem 2 releases this SDK takes
+// don't all export it
+export const robinhood = defineChain({
+  id: 4663,
+  name: 'Robinhood Chain',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: { default: { http: ['https://rpc.mainnet.chain.robinhood.com'] } },
+  blockExplorers: { default: { name: 'Blockscout', url: 'https://robinhoodchain.blockscout.com' } },
+  contracts: { multicall3: { address: '0xca11bde05977b3631167028862be2a173976ca11' } },
+})
 
-/** The registry on each chain. Base has none until mainnet; pass `registry` to read another one. */
+/** The chain Readable lives on, by id. */
+export const chains = { [robinhood.id]: robinhood }
+
+/** The registry on each chain; pass `registry` to read another one. */
 export const registries = {
-  [baseSepolia.id]: '0x7c636853ECFA14e61d3A9Ec0c9501d66D17797D6',
+  [robinhood.id]: '0x8085d2351F5Bb3675549683495134fc9B4D8A2F9',
 }
 
 // The text key a name's records are stored under, one JSON document

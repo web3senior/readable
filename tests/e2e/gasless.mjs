@@ -59,7 +59,7 @@ try {
 
   // The changes: not one wei left for a fee
   await rpc('anvil_setBalance', [BUYER, '0x0'])
-  await page.goto(`${APP}/names/+0-${LABEL}`, { waitUntil: 'networkidle' })
+  await page.goto(`${APP}/names/+0${LABEL}`, { waitUntil: 'networkidle' })
   await page.getByText(NOTE, { exact: false }).first().waitFor({ timeout: 30000 })
 
   await section('Points to').getByLabel('Wallet address').fill(OTHER)

@@ -34,7 +34,7 @@ for (const held of [NAME, LONG_NUMBER]) console.log('holds:', await flat(card(he
 
 // Every change is made on the name's own page, opened from its card
 await card(NAME).getByRole('link', { name: 'Manage' }).click()
-await page.waitForURL((url) => url.pathname === '/names/+0-4343')
+await page.waitForURL((url) => url.pathname === '/names/+04343')
 const section = (name) => page.getByRole('region', { name, exact: true })
 
 await section('Points to').getByLabel('Wallet address').fill('not-an-address')

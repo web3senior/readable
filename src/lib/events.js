@@ -1,5 +1,5 @@
 import { decodeEventLog, encodeEventTopics, getAbiItem, isAddressEqual } from 'viem'
-import { eventsApiFor } from '@/config/chains'
+import { eventsApiFor, logSpanFor } from '@/config/chains'
 import { registry } from '@/config/registry'
 import { site } from '@/config/site'
 import { publicClient } from '@/lib/registry'
@@ -55,15 +55,26 @@ export async function readPaymentsInside(hash) {
     .map((item) => BigInt(item.value))
 }
 
-/** The registry's `events` of the newest blocks, which is all of them on a local chain. */
+/**
+ * The registry's `events` read from the chain: every one since its deployment where the chain's
+ * RPC serves logs over wide windows, otherwise those of the newest blocks, which is all of them on
+ * a local chain.
+ */
 async function fromChain(events) {
   const client = publicClient()
   // Uncached: viem keeps the block number for a moment, and a read right after a transaction
   // confirms would stop at the block before it and leave its event out
   const head = await client.getBlockNumber({ cacheTime: 0 })
-  const span = BigInt(recentBlocks)
-  const logs = await client.getLogs({ address: registry.address, events, fromBlock: head > span ? head - span : 0n, toBlock: head })
-  return logs.map((log) => ({
+  const logSpan = logSpanFor(registry.chainId)
+  const span = BigInt(logSpan ?? recentBlocks)
+  const windows = []
+  if (logSpan) {
+    for (let from = registry.fromBlock; from <= head; from += span) windows.push([from, from + span - 1n < head ? from + span - 1n : head])
+  } else {
+    windows.push([head > span ? head - span : 0n, head])
+  }
+  const reads = await Promise.all(windows.map(([fromBlock, toBlock]) => client.getLogs({ address: registry.address, events, fromBlock, toBlock })))
+  return reads.flat().map((log) => ({
     ...log.args,
     eventName: log.eventName,
     hash: log.transactionHash,
@@ -78,13 +89,16 @@ async function fromChain(events) {
  * each with its `eventName`: what the explorer has indexed, with the newest blocks read from
  * the chain, which the explorer may not have yet. By default the explorer's first page, and one
  * source is enough. With `all`, every page, and the explorer must answer: the chain alone holds
- * the newest blocks only, so the older events would be missing and nothing would say so.
+ * the newest blocks only, so the older events would be missing and nothing would say so. On a
+ * chain whose RPC serves wide windows the chain holds them all, and it must answer instead.
  */
 export async function readEvents(name, { all = false } = {}) {
   const events = [name].flat().map((each) => getAbiItem({ abi: registry.abi, name: each }))
   const sources = await Promise.allSettled([fromChain(events), fromExplorer(events, all ? Infinity : 1)])
   const [chain, explorer] = sources
-  if (all && explorer.status === 'rejected') throw explorer.reason
+  const whole = Boolean(logSpanFor(registry.chainId))
+  if (all && whole && chain.status === 'rejected') throw chain.reason
+  if (all && !whole && explorer.status === 'rejected') throw explorer.reason
   if (chain.status === 'rejected' && explorer.status === 'rejected') throw chain.reason
 
   const seen = new Map()

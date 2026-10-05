@@ -13,7 +13,7 @@ const MAX_LENGTH = 80
 
 const widthOf = (text) => Math.ceil(graphemeLength(text) * badge.fontSize * CHARACTER_WIDTH)
 
-// GET /api/badge/+0-4242: "Pay me at +0 4242", to put on a site or in a README, linked by whoever
+// GET /api/badge/+04242: "Pay me at +0 4242", to put on a site or in a README, linked by whoever
 // embeds it to the name's page. Drawn from the path alone, so it never waits for the chain
 export async function GET(_request, { params }) {
   const name = nameFromSlug((await params).name).trim()

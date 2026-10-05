@@ -8,7 +8,7 @@ import { launchFacts, registryFacts } from '@/lib/docs'
 import { readRegistryTerms } from '@/lib/registry'
 
 /**
- * What the docs quote from the registry: prices, extensions and the grace period. Read by the
+ * What the docs quote from the registry: the number rules, prices, extensions and the grace period. Read by the
  * browser after the page has arrived, so the page never waits for the chain.
  * Until the registry answers, and if it doesn't, the launch values stand in.
  */

@@ -1,4 +1,4 @@
-import { KIND, KIND_BY_INDEX, kindDefaults } from '@/config/namespaces'
+import { KIND, KIND_BY_INDEX, kindDefaults, previewNamespaces } from '@/config/namespaces'
 import { site } from '@/config/site'
 import { priceFromOf } from '@/lib/pricing'
 import { formatNumber } from '@/lib/query/numbers'
@@ -62,20 +62,38 @@ export function toNamespace(source, { chainId, currency } = {}) {
 export const displayName = (namespace, label) =>
   namespace.kind === KIND.NUMBER ? formatNumber(label, namespace) : `${label}${namespace.suffix ?? ''}`
 
-/** The page of a name: `/names/+0-42421230` or `/names/alice.arc`, what the search reads back. */
-export const namePath = (namespace, label) => `${site.names.path}/${displayName(namespace, label).replaceAll(' ', '-')}`
+/** The page of a name: `/names/+042421230` or `/names/alice.arc`, what the search reads back. */
+export const namePath = (namespace, label) => `${site.names.path}/${displayName(namespace, label).replaceAll(' ', '')}`
+
+// The prefix of the numbers the site launched with, which a page's path joins to the digits
+const NUMBER_PREFIX = `+${previewNamespaces.find((source) => source.kind === KIND.NUMBER)?.name ?? ''}`
+
+const decodeSlug = (slug) => {
+  const raw = String(slug ?? '')
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw
+  }
+}
 
 /**
- * The name a page's path segment stands for, as the site writes it: `+0-42421230`, and an older
- * link's `+0-4242-1230`, are `+0 42421230`. Read from the path alone, so whatever draws it never
- * waits for the chain.
+ * The name a page's path segment stands for, as the site writes it: `+042421230`, and an older
+ * link's `+0-42421230` or `+0-4242-1230`, are `+0 42421230`. Read from the path alone, so
+ * whatever draws it never waits for the chain.
  */
 export const nameFromSlug = (slug) => {
-  let name = String(slug ?? '')
-  try {
-    name = decodeURIComponent(name)
-  } catch {}
+  const name = decodeSlug(slug).trim()
   if (!name.startsWith('+')) return name
-  const [prefix, ...digits] = name.trim().split(/[\s-]+/)
-  return digits.length ? `${prefix} ${digits.join('')}` : name
+  const [prefix, ...digits] = name.split(/[\s-]+/)
+  if (digits.length) return `${prefix} ${digits.join('')}`
+  return name.length > NUMBER_PREFIX.length && name.startsWith(NUMBER_PREFIX) ? `${NUMBER_PREFIX} ${name.slice(NUMBER_PREFIX.length)}` : name
+}
+
+/** Where a number's older path (`+0-4242-1230`) moved to (`/names/+042421230`), or null when it is the page's own. */
+export const movedNamePath = (slug) => {
+  const typed = decodeSlug(slug)
+  if (!typed.startsWith('+')) return null
+  const path = nameFromSlug(typed).replaceAll(' ', '')
+  return path === typed ? null : `${site.names.path}/${path}`
 }

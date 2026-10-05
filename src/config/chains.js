@@ -1,22 +1,24 @@
-import { base, baseSepolia, lukso } from 'viem/chains'
+import { base, lukso, robinhood } from 'viem/chains'
 
-// The registry lives on one chain, so a name belongs to one holder. Base is its home; Base
-// Sepolia is where it is rehearsed
-const SUPPORTED = [base, baseSepolia]
+// The registry lives on one chain, so a name belongs to one holder: Robinhood Chain
+const SUPPORTED = [robinhood]
 
 // NEXT_PUBLIC_ values are inlined only when referenced literally
-const HOME_ID = Number(process.env.NEXT_PUBLIC_READABLE_CHAIN_ID) || base.id
+const HOME_ID = Number(process.env.NEXT_PUBLIC_READABLE_CHAIN_ID) || robinhood.id
 const RPC_OVERRIDE = process.env.NEXT_PUBLIC_READABLE_RPC
 
-// Blockscout hands out a contract's events newest first in one request. The public RPCs serve
-// logs a thousand blocks at a time, which is half an hour of Base
-const EVENT_APIS = {
-  [base.id]: 'https://base.blockscout.com/api/v2',
-  [baseSepolia.id]: 'https://base-sepolia.blockscout.com/api/v2',
+// Blockscout hands out a contract's events newest first in one request, where its API answers a
+// server. Robinhood Chain's sits behind a browser check, so its events come from the chain
+const EVENT_APIS = {}
+
+// How many blocks a chain's public RPC serves logs for in one request, where that reaches back to
+// the registry's deployment in a few reads: its events are read from there, window by window.
+// Robinhood Chain's serves ten million, eleven days of its blocks
+const LOG_SPANS = {
+  [robinhood.id]: 10_000_000,
 }
 
-// Where a name's NFT is listed and an offer reaches its holder. OpenSea has no testnets, so
-// Base Sepolia has none
+// Where a name's NFT is listed and an offer reaches its holder
 const MARKETPLACES = {
   [base.id]: 'https://opensea.io/item/base/{contract}/{tokenId}',
 }
@@ -28,19 +30,17 @@ const ONRAMP_NETWORKS = {
 
 // What viem exports each chain as, for the code the docs print
 const VIEM_EXPORTS = {
-  [base.id]: 'base',
-  [baseSepolia.id]: 'baseSepolia',
+  [robinhood.id]: 'robinhood',
 }
 
-export const home = SUPPORTED.find((chain) => chain.id === HOME_ID) ?? base
+export const home = SUPPORTED.find((chain) => chain.id === HOME_ID) ?? robinhood
 
 // Chainlink's ETH/USD feed on Base, read for the dollar value shown beside a price in ETH, on
-// whichever chain the registry is: a testnet's ETH is shown at the real one's price. Checked
-// onchain 2026-10-03: "ETH / USD", 8 decimals
+// whichever chain the registry is. Checked onchain 2026-10-03: "ETH / USD", 8 decimals
 export const ethUsdFeed = { chain: base, address: '0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70', rpc: base.rpcUrls.default.http[0] }
 
 // LUKSO, where Universal Profiles live. A profile in a name's records is checked and read there
-// whichever chain the registry is on: a testnet registry still links real profiles
+// whichever chain the registry is on
 export const universalProfiles = { chain: lukso, rpc: lukso.rpcUrls.default.http[0] }
 
 export const chains = [home]
@@ -50,6 +50,9 @@ export const chainById = (chainId) => chains.find((chain) => chain.id === Number
 export const rpcUrlFor = (chainId) => (Number(chainId) === home.id && RPC_OVERRIDE) || chainById(chainId)?.rpcUrls.default.http[0] || null
 
 export const eventsApiFor = (chainId) => EVENT_APIS[Number(chainId)] ?? null
+
+/** How many blocks one read of logs may span on this chain, or null where only the newest are read. */
+export const logSpanFor = (chainId) => LOG_SPANS[Number(chainId)] ?? null
 
 export const viemExportFor = (chainId) => VIEM_EXPORTS[Number(chainId)] ?? null
 

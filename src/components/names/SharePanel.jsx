@@ -11,7 +11,7 @@ const { share } = site.profile
 
 /**
  * Ways to hand a name to someone: its page's link, a code a phone scans, and a badge for a site.
- * `path` is the name's page, `/names/+0-4242`.
+ * `path` is the name's page, `/names/+04242`.
  */
 export default function SharePanel({ name, path }) {
   const titleId = useId()
