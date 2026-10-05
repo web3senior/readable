@@ -14,7 +14,8 @@ export const OFFERED_KINDS = [KIND.NAME, KIND.NUMBER]
  * Display copy per kind. A namespace's onchain `metadata` JSON (label, title, about) overrides
  * any of it; `{name}` is replaced with the namespace name. `noun` names the kind in the search
  * placeholder; `examples` are offered on an empty search when they pass the namespace's rules.
- * `exampleLengths` offers a number of each length, drawn at random on each visit.
+ * `exampleLengths` offers a number of each length, drawn at random on each visit; a range, [8, 11],
+ * offers one of a length drawn in it.
  */
 export const kindDefaults = {
   [KIND.NAME]: {
@@ -34,8 +35,8 @@ export const kindDefaults = {
     label: 'Numbers',
     title: 'Onchain numbers',
     noun: 'number',
-    // One of each length from the scarcest up
-    exampleLengths: [2, 3, 4, 5, 6, 7],
+    // One of each length from the scarcest up, then a long one, which ends in its check digit
+    exampleLengths: [2, 3, 4, 5, 6, 7, [8, 11]],
     about: {
       title: 'What are onchain numbers?',
       body: [

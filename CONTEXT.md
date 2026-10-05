@@ -29,8 +29,11 @@ Roadmap order, decided by the user:
   `exampleLengths`, with no leading zero and the check digit where one is due. They are drawn
   in the browser only, so a shimmer holds their place in the server's render. Since 2026-10-04
   (the user's request) there is one of each length from 2 to 7 digits, none with a check digit;
-  it replaced a 2-digit and an 8-digit one. `site.search.exampleLimit` is 7, so an extension's
-  username still fits once one is added.
+  it replaced a 2-digit and an 8-digit one. Since 2026-10-06 (the user's request: "a random
+  long one too maybe 8 or 11 length") a long one follows, its length drawn from 8 to 11 too
+  (`[8, 11]` in `exampleLengths`), with its check digit. Lengths outside what the registry
+  sells are pulled in, so Robinhood Chain's 4 to 11 digits show 4 to 7 and the long one.
+  `site.search.exampleLimit` is 8, so an extension's username still fits once one is added.
 - **The hero names both kinds (2026-10-03, the user’s request: "we have names and numbers both").**
   The copy names no extension; the search below it still offers only what the registry holds,
   so until an extension is added it says "Number".
@@ -111,7 +114,7 @@ Roadmap order, decided by the user:
   activity, the agents directory, the MCP server's `page`) is the joined form. `nameFromSlug`
   reads it back by the launch number prefix, for the title, the preview picture and the badge.
   An older link, `/names/+0-42421230` or `/names/+0-4242-1230` (and `%2B0-4242`, as Tunnel and
-  Hup still write it), is sent on with a 308 by `movedNamePath` in the page.
+  Hup wrote it until 2026-10-06), is sent on with a 308 by `movedNamePath` in the page.
 - **A name stays reachable when what is sold changes (2026-10-04, a fix the user asked for).**
   On Base Sepolia the owner set Numbers to 4 to 6 digits with a check digit from 6 after
   `+0 123456` and `+0 1234567` were registered. The app checked a name against today's length
@@ -917,9 +920,12 @@ as deployed.
   invites work (`lib/readableName.js`, `hooks/useReadablePin.js`). Hup: a profile shows the
   wallet's primary number (`components/ReadableNumber.jsx`). Both read readable.name's API
   (`NEXT_PUBLIC_READABLE_API`). Both pushed to `main` on 2026-10-05 (Tunnel `36128e0`, Hup
-  `2c4f3f5f`). They call the API from the browser, so it must answer on the origin they name
-  without a redirect: on 2026-10-05 `readable.name` sent a 308 to `www` with no CORS header,
-  and every call failed (the user was moving the site to the apex on Vercel).
+  `2c4f3f5f`). On 2026-10-06 both moved to Robinhood Chain in their copy and link a number's
+  page in the joined form (`/names/+042421230`); neither names the registry, so a new contract
+  reaches them through the API alone. They call the API from the browser, so it must answer on
+  the origin they name without a redirect: on 2026-10-05 `readable.name` sent a 308 to `www`
+  with no CORS header, and every call failed (the user was moving the site to the apex on
+  Vercel).
 - Proven on a fork of Base Sepolia by `tests/e2e/reach.mjs` (30 checks, see Local end-to-end).
   Not proven there: a real X or GitHub proof (the negative path and the signature are), the
   onramp (no testnet), a smart wallet's batch through a live paymaster (the guard is), Tunnel

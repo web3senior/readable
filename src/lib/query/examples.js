@@ -6,19 +6,24 @@ const listOr = new Intl.ListFormat('en', { type: 'disjunction' })
 
 const passes = (example, namespace) => parseQuery(example, [namespace]).candidates.some((candidate) => candidate.valid)
 
-// The configured lengths, kept within the lengths the namespace sells
-const lengthsFor = ({ exampleLengths, rules }) => [
-  ...new Set(exampleLengths.map((length) => Math.min(Math.max(length, rules.minLength || length), rules.maxLength || length))),
+// One draw of each for each page load: the examples hold still while the page is open and change
+// on the next visit
+const drawn = new Map()
+const once = (key, draw) => (drawn.has(key) ? drawn.get(key) : drawn.set(key, draw()).get(key))
+
+const randomBetween = (from, to) => from + Math.floor(Math.random() * (to - from + 1))
+
+// The configured lengths, a range ([8, 11]) as one length drawn in it, kept within the lengths the
+// namespace sells
+const lengthsFor = ({ id, exampleLengths, rules }) => [
+  ...new Set(
+    exampleLengths
+      .map((entry) => (Array.isArray(entry) ? once(`${id}:${entry}`, () => randomBetween(...entry)) : entry))
+      .map((length) => Math.min(Math.max(length, rules.minLength || length), rules.maxLength || length))
+  ),
 ]
 
-// One draw per namespace and length for each page load: the examples hold still while the page
-// is open and change on the next visit
-const drawn = new Map()
-const drawNumber = (namespace, length) => {
-  const key = `${namespace.id}:${length}`
-  if (!drawn.has(key)) drawn.set(key, formatNumber(randomNumber(length, namespace), namespace))
-  return drawn.get(key)
-}
+const drawNumber = (namespace, length) => once(`${namespace.id}:${length}`, () => formatNumber(randomNumber(length, namespace), namespace))
 
 /**
  * Example queries for the namespaces the registry holds: random numbers of each namespace's

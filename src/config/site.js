@@ -51,8 +51,8 @@ export const site = {
     also: 'Also',
     copyLink: 'Copy link',
     // Examples come from the namespaces themselves (kindDefaults in config/namespaces.js)
-    // The six numbers and an extension's username
-    exampleLimit: 7,
+    // The seven numbers and an extension's username
+    exampleLimit: 8,
     // Someone else's name: its page, with its contact card
     open: 'View profile',
     // A word typed into the search is also the number it dials on a phone keypad
