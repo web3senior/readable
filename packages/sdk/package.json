@@ -1,6 +1,6 @@
 {
   "name": "readable-sdk",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Resolve readable.name numbers and names: the wallet, the addresses on other chains, the records, the AI agent and the reverse name.",
   "type": "module",
   "exports": {
@@ -21,10 +21,16 @@
     "names",
     "resolver",
     "ai-agents",
-    "base",
+    "robinhood",
     "viem"
   ],
   "homepage": "https://readable.name/docs#sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web3senior/readable.git",
+    "directory": "packages/sdk"
+  },
+  "bugs": "https://github.com/web3senior/readable/issues",
   "license": "MIT",
   "engines": {
     "node": ">=18"

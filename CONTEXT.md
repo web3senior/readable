@@ -1104,7 +1104,8 @@ as deployed.
   contract (ENS's OffchainResolver, MIT, unchanged: its URL `https://readable.name/api/ens/{sender}/{data}.json`,
   its signer the address of `ENS_GATEWAY_PRIVATE_KEY`), deploy it on Ethereum and set it as the
   resolver of `readable.eth` (or of `readable.name` imported into ENS), then set
-  `ENS_RESOLVER_ADDRESS`. Publish `readable-sdk` 0.2.0 and `readable-snap`, and ask MetaMask to
+  `ENS_RESOLVER_ADDRESS`. Publish `readable-sdk` 1.0.0 (the user's choice of version for the first release,
+  2026-10-06; 0.2.0 was never published) and `readable-snap`, and ask MetaMask to
   list the Snap. List the mini app on Hup. Set
   `CDP_API_KEY_*` and `PAYMASTER_URL` (with the paymaster's own allowlist: the registry). Deploy
   Tunnel and Hup with `NEXT_PUBLIC_READABLE_API`.
