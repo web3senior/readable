@@ -22,8 +22,7 @@ import { formatBalance, formatDays, truncateAddress } from '@/lib/format'
 import styles from './RegistryPanel.module.scss'
 
 /** A truncated address with its copy button, linked to the explorer when the chain has one. */
-export function AddressValue({ value }) {
-  const explorer = explorerFor(registry.chainId)
+export function AddressValue({ value, explorer = explorerFor(registry.chainId) }) {
   const text = <span className={styles.registry__address}>{truncateAddress(value, 8, 6)}</span>
   return (
     <span className={styles.registry__inline}>

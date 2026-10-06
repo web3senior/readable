@@ -154,6 +154,46 @@ Roadmap order, decided by the user:
   ETH/USD feed (an oracle, stale-price checks and refunds): the owner reprices when ETH moves.
   Paying a name (the Pay button) sends ETH too, a plain transfer. What it cost: a buyer needs
   ETH on Base, and buying is no longer gasless (an ETH price can't travel in a signed request).
+- **A name can be bought with LYX (2026-10-06, the user's request, after asking how to support
+  LUKSO).** No bridge and no contract change: the buyer pays on LUKSO, then the server's checkout
+  wallet registers the name with `registerFor` and pays its price in ETH (`lib/checkout.js`,
+  `/api/checkout`, `config/checkout.js`, the Pay with ETH | LYX choice in `PaymentDialog`).
+  Chosen over a bridge (Relay, LI.FI and Across list Robinhood Chain but not LUKSO, and LUKSO's
+  Hyperlane route reaches Ethereum alone) and over a checkout contract on LUKSO, which would
+  need the owner's plan first.
+  - A quote (the name, its holder, the years, the most ETH the checkout pays, the LYX, until
+    when) is signed with a secret derived from `CHECKOUT_PRIVATE_KEY`, and the payment carries it
+    as its data, after four zero bytes so a Universal Profile receiving it takes it (LSP17's
+    graffiti). So a payment says what it buys, `POST /api/checkout/claim {hash}` finishes it for
+    anyone, and nothing is stored: a name its holder has makes a claim done, so a payment claimed
+    twice buys once. LYX at CoinGecko's rate plus 3%, rounded up to 0.01, held 15 minutes; 12
+    LUKSO blocks before buying.
+  - LUKSO is read through its Blockscout (its public RPC turns a busy server away): a wallet's
+    payment from the transaction, a smart account's from the explorer's trace, never from the
+    `Executed` event, which any contract could emit without paying.
+  - The holder must work on Robinhood Chain: an address with code on LUKSO and none there (a
+    Universal Profile) is refused. So is a name the checkout wallet can't pay for with its gas
+    (the user's choice, the same day): no LYX is taken for a purchase that would only wait for a
+    refund. Quotes standing at once can still add up past the balance; those wait for a top-up.
+  - The LYX goes to `CHECKOUT_LYX_RECEIVER`, the owner's own address; the server holds no LUKSO
+    key. **Refunds are by hand**, from that address, as `/admin`'s LYX checkout lists them: with
+    no store, two claims at once could each send an automatic one. Final at once: paid late, paid
+    short, the name taken first. A reason that can change (paused, price up, checkout out of ETH)
+    is retried until a day after the quote's end, so refund only after that.
+  - **The wallet chooser leaves out the Universal Profile extension (the user's request, the same
+    day)**: its account can't hold a name on Robinhood Chain or sign there, while a key wallet such
+    as MetaMask pays in ETH or, on LUKSO, in LYX. `isHiddenWallet` in `config/wallets.js` matches
+    its EIP-6963 rdns (`io.universaleverything.*`, a guess from its app's deep link, unconfirmed)
+    or its name ("Universal Profiles"); the generic Browser wallet is hidden too when
+    `window.ethereum` is the extension's `window.lukso`; a session it already holds is
+    disconnected. A bridge of the name as LSP8 and a profile recreated on Robinhood Chain were
+    weighed and declined.
+  - Registrations only; renewing with LYX is not built. The browser keeps a payment it hasn't
+    seen finish (`readable:checkout`) and finishes it on the next visit; `/admin` can too.
+  - Proven 2026-10-06 by `tests/e2e/checkout.mjs` on forks of both chains with a stand-in
+    explorer: a wallet through the dialog, a real Universal Profile through its `execute`, a claim
+    made twice, late and taken refunds, LYX without a quote, the list and `/admin`'s Register.
+    Not against LUKSO's real Blockscout or with real LYX.
 - **A price in ETH shows its dollar value under it (2026-10-03, the user's request)**, as
   "≈ $67.03", on the search card (and the launch preview) and under the yearly price and the
   total in the payment dialog (`components/search/UsdValue`). The rate is Chainlink's ETH/USD
@@ -1145,6 +1185,11 @@ Mini App, then contacts and alerts. **Step 1 is built**; 2 and 3 are not.
 - An idea from the same answer that needs the contract, so it belongs before mainnet: a fair
   launch for short numbers (a commit step or a falling price). `registerFor` from that answer
   is built (2026-10-04).
+- **The LYX checkout, the user's steps (2026-10-06):** a fresh wallet for `CHECKOUT_PRIVATE_KEY`,
+  holding only the ETH on Robinhood Chain you are willing to have in flight; `CHECKOUT_LYX_RECEIVER`
+  set to the owner's own LUKSO address (a wallet or a Universal Profile); private RPCs in
+  `NEXT_PUBLIC_LUKSO_RPC` and `CHECKOUT_RPC` if the public ones turn the server away. Then one
+  real purchase of a cheap number, and its line on `/admin`.
 - **The Telegram bot, the user's steps (2026-10-06):** set `TELEGRAM_BOT_TOKEN` on the production
   server and deploy; turn inline mode on in @BotFather (`/setinline`, placeholder `+0 4242`); then
   `node scripts/telegram.mjs setup https://readable.name`. Add it to `site.integrations` once
@@ -1203,6 +1248,11 @@ Mini App, then contacts and alerts. **Step 1 is built**; 2 and 3 are not.
    free neighbours, the watch list, a proof's signature, the agents directory, the MCP server,
    the ENS gateway's signed answers and the paymaster's guard (name changes only). The app needs `RELAYER_PRIVATE_KEY`, `ENS_GATEWAY_PRIVATE_KEY` set to `ENS_KEY` of the
    script and `PAYMASTER_URL` at a closed port (`http://127.0.0.1:9/`).
+12. `node tests/e2e/checkout.mjs`: buying with LYX, on the Robinhood Chain fork and a LUKSO one
+   (`anvil --fork-url https://rpc.mainnet.lukso.network --chain-id 42 --port 8546`), against the
+   registry deployed there. It serves a stand-in for LUKSO's Blockscout on 8547 from the LUKSO fork
+   (`--explorer` serves it alone); the app's env is in the script's header. It moves the LUKSO
+   fork's clock past its quotes, so restart that fork before each run.
 
 ## Gotchas
 
@@ -1270,5 +1320,11 @@ Mini App, then contacts and alerts. **Step 1 is built**; 2 and 3 are not.
 - `build-artifacts.mjs` takes the first build info in `out/build-info` that covers a source, and
   an incremental `forge build` leaves the old ones there. Run `forge clean` before
   `forge build --build-info`, or the frozen verification input can be of an older source.
+- A fork of Robinhood Chain goes stale within the hour: its public RPC drops the state of the fork's
+  block ("historical state … is not available"), reads of slots the fork hasn't fetched fail, and
+  `/admin` says the registry couldn't be read. Start the fork again. After many reads it also
+  answers with Cloudflare's browser check (403); fork from `https://rpc.ordofi.network`, viem's
+  second Robinhood Chain endpoint, which serves the same chain, though its logs are too slow for
+  the latest activity.
 - In the Bash tool a heredoc collapses `\\` to `\` and a long one has failed to parse; write
   Solidity and scripts with backslashes or many quotes through the file tools.

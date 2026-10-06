@@ -5,6 +5,7 @@ import { ThemeProvider } from 'next-themes'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { config } from '@/config/wagmi'
+import CheckoutResume from '@/components/CheckoutResume'
 import MiniAppBridge from '@/components/MiniAppBridge'
 import NextToast from '@/components/NextToast'
 import { WalletDialogProvider } from '@/components/WalletDialogProvider'
@@ -27,6 +28,7 @@ export default function Providers({ children }) {
           <WalletDialogProvider>{children}</WalletDialogProvider>
           <NextToast />
           <MiniAppBridge />
+          <CheckoutResume />
         </QueryClientProvider>
       </WagmiProvider>
     </ThemeProvider>

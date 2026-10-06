@@ -39,9 +39,12 @@ export const home = SUPPORTED.find((chain) => chain.id === HOME_ID) ?? robinhood
 // whichever chain the registry is. Checked onchain 2026-10-03: "ETH / USD", 8 decimals
 export const ethUsdFeed = { chain: base, address: '0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70', rpc: base.rpcUrls.default.http[0] }
 
+// LUKSO's RPC: its public endpoint, unless NEXT_PUBLIC_LUKSO_RPC names a private one or a local fork
+export const luksoRpc = process.env.NEXT_PUBLIC_LUKSO_RPC || lukso.rpcUrls.default.http[0]
+
 // LUKSO, where Universal Profiles live. A profile in a name's records is checked and read there
 // whichever chain the registry is on
-export const universalProfiles = { chain: lukso, rpc: lukso.rpcUrls.default.http[0] }
+export const universalProfiles = { chain: lukso, rpc: luksoRpc }
 
 export const chains = [home]
 

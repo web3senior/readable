@@ -12,6 +12,15 @@ export const CONNECTOR_TYPES = {
 // wagmi's plain window.ethereum connector; a wallet announced over EIP-6963 carries its rdns instead
 export const GENERIC_INJECTED_ID = 'injected'
 
+// Wallets the chooser leaves out. The Universal Profile extension's account is a profile on LUKSO
+// alone: it can't hold a name on the registry's chain, nor sign there. A key wallet such as
+// MetaMask holds the name and pays in ETH or, on LUKSO, in LYX
+const HIDDEN_WALLETS = [{ rdns: /^io\.universaleverything\./i, name: /universal profile/i }]
+
+/** Whether the chooser leaves `connector` out, by the rdns or the name it announced. */
+export const isHiddenWallet = (connector) =>
+  HIDDEN_WALLETS.some(({ rdns, name }) => rdns.test(connector.rdns ?? connector.id ?? '') || name.test(connector.name ?? ''))
+
 /**
  * Options for the WalletConnect connector, or null while no project id is set. The origin is
  * the page's own, so the wallet's approval screen names the host the visitor is really on.

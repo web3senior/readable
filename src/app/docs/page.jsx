@@ -18,6 +18,7 @@ import {
 } from '@/components/docs/samples'
 import { addresses } from '@/config/addresses'
 import { explorerFor, home, viemExportFor } from '@/config/chains'
+import { checkout } from '@/config/checkout'
 import { docGroups } from '@/config/docs'
 import { ens } from '@/config/ens'
 import { records } from '@/config/records'
@@ -237,6 +238,14 @@ export default function DocsPage() {
             <p className={styles.doc__text}>
               <strong>No {currency} yet?</strong> Where Coinbase’s onramp serves the chain, the payment dialog offers to buy it by card,
               delivered to the wallet you are paying from.
+            </p>
+            <p className={styles.doc__text}>
+              <strong>Paying in {checkout.coin.symbol}.</strong> While the site takes it, the payment dialog can price a registration in{' '}
+              {checkout.coin.symbol}, held for {checkout.quoteSeconds / 60} minutes. You pay on {checkout.chain.name}, and once{' '}
+              {checkout.confirmations} of its blocks confirm the payment, Readable’s checkout registers the name on {home.name} to the
+              wallet you named and pays its price in {currency}. That wallet holds the name, so it must be one that works on {home.name}:
+              a Universal Profile exists on {checkout.chain.name} alone. A payment that can’t buy its name, because someone registered it
+              first or it was paid after its price ran out, is refunded to the wallet that paid.
             </p>
           </Section>
 

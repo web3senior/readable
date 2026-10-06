@@ -9,7 +9,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/Loading'
 import { toast } from '@/components/NextToast'
 import { site } from '@/config/site'
-import { CONNECTOR_TYPES, GENERIC_INJECTED_ID } from '@/config/wallets'
+import { CONNECTOR_TYPES, GENERIC_INJECTED_ID, isHiddenWallet } from '@/config/wallets'
 import { themeWalletConnect } from '@/lib/walletConnectTheme'
 import styles from './WalletDialog.module.scss'
 
@@ -26,12 +26,16 @@ const isDetected = (connector) => connector.type === CONNECTOR_TYPES.injected &&
 // WalletConnect draws its own sheet in the page, underneath anything in the top layer
 const bringsOwnSheet = (connector) => connector.type === CONNECTOR_TYPES.walletConnect
 
+// The Universal Profile extension sets window.lukso, and window.ethereum too when no other wallet has
+const profileOnly = () => Boolean(window.lukso) && window.ethereum === window.lukso
+
 // Installed wallets lead. The generic connector stands in for a provider that never announced
-// itself, and is left out where there is none to reach (a phone browser)
+// itself, and is left out where there is none to reach (a phone browser), or only a profile
 const visibleWallets = (connectors) => {
-  const detected = connectors.filter(isDetected)
-  const showGeneric = detected.length === 0 && Boolean(window.ethereum)
-  const others = connectors.filter((connector) => !isDetected(connector) && (!isGeneric(connector) || showGeneric))
+  const listed = connectors.filter((connector) => !isHiddenWallet(connector))
+  const detected = listed.filter(isDetected)
+  const showGeneric = detected.length === 0 && Boolean(window.ethereum) && !profileOnly()
+  const others = listed.filter((connector) => !isDetected(connector) && (!isGeneric(connector) || showGeneric))
   return [...detected, ...others]
 }
 

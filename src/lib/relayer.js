@@ -63,12 +63,18 @@ export const waitFor = (kind, account, { windowMs, max }) => {
 /** Counts one request of `kind` sent for `account`; counted once it goes out, so a refused one never starts a wait. */
 export const countHit = (kind, account, { windowMs }) => recentHits(kind, account, windowMs).push(Date.now())
 
-// Two sends at once race on the relayer's account nonce, so they go out one after another
-let queue = Promise.resolve()
-
-/** Runs `task` after every earlier send, and resolves to what it returns. */
-export const enqueueSend = (task) => {
-  const next = queue.then(task, task)
-  queue = next.catch(() => {})
-  return next
+/**
+ * A queue for one account's sends: two at once race on its nonce, so they go out one after
+ * another. The returned function runs a task after every earlier one and resolves to what it returns.
+ */
+export const sendQueue = () => {
+  let queue = Promise.resolve()
+  return (task) => {
+    const next = queue.then(task, task)
+    queue = next.catch(() => {})
+    return next
+  }
 }
+
+/** Runs `task` after every earlier send of the relayer's, and resolves to what it returns. */
+export const enqueueSend = sendQueue()

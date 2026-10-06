@@ -10,6 +10,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import Shimmer from '@/components/ui/Shimmer'
 import { useWalletDialog } from '@/components/WalletDialogProvider'
 import ActionDialog from '@/components/admin/ActionDialog'
+import CheckoutPanel from '@/components/admin/CheckoutPanel'
 import RegistryPanel from '@/components/admin/RegistryPanel'
 import SetupGuide from '@/components/admin/SetupGuide'
 import NamespaceCard from '@/components/admin/NamespaceCard'
@@ -102,6 +103,8 @@ export default function AdminConsole() {
       <SetupGuide data={data} canAct={isOwner} onAction={act} context={context} />
 
       <RegistryPanel data={data} canAct={isOwner} onAction={act} context={context} />
+
+      <CheckoutPanel data={data} />
 
       <section className={styles.console__section} aria-labelledby="admin-namespaces">
         <header className={styles.console__heading}>

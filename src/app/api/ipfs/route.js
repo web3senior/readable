@@ -1,5 +1,6 @@
 import { ipfs } from '@/config/ipfs'
 import { addToFilebase, filebaseConfigured } from '@/lib/filebase'
+import { visitorOf } from '@/lib/visitor'
 
 // Three tries at Filebase, each bounded, fit well inside this
 export const maxDuration = 60
@@ -35,8 +36,6 @@ function waitFor(visitor) {
   hits.set(visitor, [...recent, now])
   return 0
 }
-
-const visitorOf = (request) => request.headers.get('x-forwarded-for')?.split(',')[0].trim() || request.headers.get('x-real-ip') || 'local'
 
 const refuse = (error, status, headers) => Response.json({ error }, { status, headers })
 

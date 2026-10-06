@@ -187,6 +187,59 @@ export const site = {
     presets: [0.001, 0.005, 0.01],
   },
 
+  // Buying a name with LYX (config/checkout.js): paid on LUKSO, then registered for the buyer on
+  // the registry's chain by the checkout wallet. In the copy, `{chain}` is the registry's chain
+  checkout: {
+    choice: { label: 'Pay with', eth: 'ETH', lyx: 'LYX' },
+    holder: {
+      label: 'The name goes to',
+      hint: 'A wallet on {chain}, which holds and manages the name there.',
+    },
+    total: 'Total',
+    quoting: 'Pricing in LYX',
+    held: 'This price holds for {minutes} minutes.',
+    note: 'Paid on LUKSO. Once LUKSO confirms it, in about {minutes} minutes, Readable registers the name to this wallet on {chain}.',
+    action: 'Pay {amount}',
+    short: 'This wallet doesn’t hold enough LYX',
+    progress: {
+      sending: 'Paying {amount} for {name}…',
+      pending: 'Waiting for LUKSO to confirm the payment for {name} ({count} of {needed})',
+      registering: 'Registering {name}…',
+      done: '{name} is yours',
+      slow: 'Still finishing {name}. It completes when you come back, or Readable completes it.',
+    },
+    refusals: {
+      off: 'Paying with LYX isn’t available right now.',
+      years: 'Choose a length the registry sells.',
+      name: 'That isn’t a name the registry can hold.',
+      holder: 'Enter the wallet address that should hold the name.',
+      profile: 'A Universal Profile exists on LUKSO only, so it can’t hold a name on {chain}. Enter a wallet that works there.',
+      rate: 'The LYX price can’t be read right now. Try again in a minute.',
+      free: 'This name is free, so there is nothing to pay in LYX.',
+      funds: 'This name can’t be bought with LYX right now. Pay with ETH, or try LYX again later.',
+      throttled: 'Too many requests at once. Try again in a minute.',
+      unreachable: 'The registry or LUKSO couldn’t be read. Try again in a moment.',
+      malformed: 'That isn’t a LUKSO transaction.',
+    },
+    // Why a payment can't buy its name, now or ever
+    reasons: {
+      taken: 'Someone else registered it first',
+      paused: 'Registration is paused for this namespace',
+      reserved: 'It’s reserved',
+      invalid: 'The registry doesn’t take this name',
+      short: 'Less LYX than the quote was paid',
+      late: 'It was paid after its price ran out',
+      closed: 'It wasn’t completed in time',
+      price: 'Its price went up after the quote',
+      empty: 'The checkout is out of ETH for now',
+      refused: 'The registry refused the registration',
+    },
+    refund: '{reason}, so {name} wasn’t registered. The LYX will be refunded to the wallet that paid.',
+    blocked: '{reason}, so {name} isn’t registered yet. It’s tried again until {date}; after that the LYX is refunded.',
+    unpaid: 'No LYX from this transaction reached Readable.',
+    failed: 'The payment failed on LUKSO. Nothing was paid.',
+  },
+
   // A calendar file with a reminder: before a name expires, or the day a watched one returns
   reminders: {
     renew: {
@@ -739,6 +792,37 @@ export const site = {
         numbers: { label: 'Numbers', note: 'The launch lineup: numbers from two digits, at the launch prices.', action: 'Add numbers' },
         link: { label: 'NFT data link', note: 'Where wallets read each name’s title and image.', action: 'Set link' },
       },
+    },
+    // Names bought with LYX: where the LYX lands, the wallet that pays for the names, and each payment
+    checkout: {
+      title: 'LYX checkout',
+      intro: 'Names bought with LYX on LUKSO. The checkout wallet registers each one once LUKSO confirms its payment; refunds are sent by hand from the receiving wallet.',
+      receiver: 'LYX paid to',
+      wallet: 'Checkout wallet',
+      balance: 'Its ETH',
+      rate: 'LYX price',
+      payments: 'Latest payments',
+      none: 'No LYX payments yet.',
+      unreadable: 'The payments couldn’t be read.',
+      off: 'Off. Set CHECKOUT_PRIVATE_KEY and CHECKOUT_LYX_RECEIVER on the server to take LYX.',
+      loading: 'Loading LYX payments',
+      register: 'Register',
+      refresh: 'Refresh',
+      statuses: {
+        pending: 'Confirming',
+        ready: 'Ready',
+        registering: 'Registering',
+        done: 'Registered',
+        blocked: 'Waiting',
+        refund: 'Refund',
+        unpaid: 'Not paid',
+        failed: 'Failed',
+        foreign: 'No quote',
+        unknown: 'Unknown',
+      },
+      refundNote: 'Send {amount} back to {payer} from the receiving wallet.',
+      blockedNote: '{reason}. Retried until {date}, then a refund.',
+      foreignNote: 'Sent without a quote. Refund it if it was meant as a payment.',
     },
     gates: {
       unconfigured: 'No registry is configured. Set NEXT_PUBLIC_READABLE_ADDRESS to the deployed contract to manage it here.',

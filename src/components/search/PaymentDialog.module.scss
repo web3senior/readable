@@ -94,6 +94,59 @@
     color: var(--color-text-muted);
   }
 
+  // ETH or LYX, as two chips
+  &__coins {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  &__coin {
+    @include reset-button;
+    min-width: 3.5rem;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    transition:
+      border-color var(--duration-fast) ease,
+      background-color var(--duration-fast) ease,
+      color var(--duration-fast) ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-border-strong);
+      color: var(--color-text);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+
+    &--active,
+    &--active:hover:not(:disabled) {
+      border-color: var(--color-text);
+      background: var(--color-text);
+      color: var(--color-bg);
+    }
+  }
+
+  // Where the LYX total stands while the quote is asked for
+  &__quoting {
+    width: 6rem;
+    height: 1.75rem;
+  }
+
+  // A quote the server refused: the holder, the name or the price
+  &__error {
+    font-size: var(--text-sm);
+    color: var(--color-danger);
+  }
+
   // How few apps read names yet, before a first payment
   &__early {
     font-size: var(--text-sm);
