@@ -70,6 +70,11 @@ Roadmap order, decided by the user:
     from `NEXT_PUBLIC_READABLE_FROM_BLOCK`, the block the registry was deployed in (81,103,476),
     and with `all` the chain must answer instead of the explorer. A year is about 32 reads. A
     smart account's purchase shows no price (`readPaymentsInside` needs the explorer's trace).
+    The ten million hold for a read of one kind of event or of all: one of several kinds at once
+    gets 100,000 blocks (under three hours). So `fromChain` reads all the registry's logs and
+    picks the kinds itself. Found 2026-10-06, when the registry passed 100,000 blocks and the
+    latest activity vanished: with no explorer configured, the chain's refusal read as an empty
+    history. A chain without an explorer now counts as no source, so that is a 502.
   - The SDK defines Robinhood Chain itself with `defineChain` and defaults to it: it takes any
     viem 2, and older releases don't export `robinhood`.
 - **Search copy lives in `config/site.js`, not in env (2026-10-04, the user's choice over

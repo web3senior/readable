@@ -1,4 +1,4 @@
-import { decodeEventLog, encodeEventTopics, getAbiItem, isAddressEqual } from 'viem'
+import { decodeEventLog, encodeEventTopics, getAbiItem, isAddressEqual, parseEventLogs } from 'viem'
 import { eventsApiFor, logSpanFor } from '@/config/chains'
 import { registry } from '@/config/registry'
 import { site } from '@/config/site'
@@ -8,10 +8,13 @@ const { recentBlocks } = site.events
 
 const newestFirst = (a, b) => Number(b.block - a.block) || b.index - a.index
 
-/** The registry's `events` the explorer has indexed, newest first, `pages` of them at most. */
+/**
+ * The registry's `events` the explorer has indexed, newest first, `pages` of them at most. Null
+ * on a chain without an explorer, which is no answer: an empty list would hide the chain's failure.
+ */
 async function fromExplorer(events, pages) {
   const api = eventsApiFor(registry.chainId)
-  if (!api) return []
+  if (!api) return null
   const topics = new Set(events.map((event) => encodeEventTopics({ abi: [event] })[0]))
   const found = []
   // The explorer filters by one topic; several kinds are read from all the registry's logs.
@@ -73,8 +76,10 @@ async function fromChain(events) {
   } else {
     windows.push([head > span ? head - span : 0n, head])
   }
-  const reads = await Promise.all(windows.map(([fromBlock, toBlock]) => client.getLogs({ address: registry.address, events, fromBlock, toBlock })))
-  return reads.flat().map((log) => ({
+  // Every log of the registry, its kinds picked out here: Robinhood Chain's RPC serves a wide
+  // window to a read of one kind or of all, and only 100,000 blocks to a read of several
+  const reads = await Promise.all(windows.map(([fromBlock, toBlock]) => client.getLogs({ address: registry.address, fromBlock, toBlock })))
+  return parseEventLogs({ abi: events, logs: reads.flat() }).map((log) => ({
     ...log.args,
     eventName: log.eventName,
     hash: log.transactionHash,
@@ -99,7 +104,7 @@ export async function readEvents(name, { all = false } = {}) {
   const whole = Boolean(logSpanFor(registry.chainId))
   if (all && whole && chain.status === 'rejected') throw chain.reason
   if (all && !whole && explorer.status === 'rejected') throw explorer.reason
-  if (chain.status === 'rejected' && explorer.status === 'rejected') throw chain.reason
+  if (chain.status === 'rejected' && (explorer.status === 'rejected' || explorer.value === null)) throw chain.reason
 
   const seen = new Map()
   for (const log of sources.flatMap((source) => source.value ?? [])) seen.set(`${log.hash}:${log.index}`, log)
