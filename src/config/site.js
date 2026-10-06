@@ -290,6 +290,58 @@ export const site = {
     version: '0.1.0',
   },
 
+  // The Telegram bot: a name looked up in a chat, and inline in any chat (@bot +0 4242) a name's
+  // card with a button to its page. Telegram posts each update to `path`, and the bot answers in
+  // the webhook's reply. scripts/telegram.mjs sets the webhook, and the menu and descriptions
+  // below, which GET `path` serves. `{name}` is a name as the site writes it, `{bot}` the username
+  telegram: {
+    path: '/api/telegram',
+    username: 'readablenamebot',
+    // A brake on one account reading the chain without pause, per server instance
+    throttle: { max: 30, windowMs: 60_000 },
+    // How long Telegram keeps the answer to the same inline query, in seconds
+    inlineCacheSeconds: 30,
+    // Cards offered for one inline query: the name typed, and the number a word spells
+    inlineLimit: 3,
+    agentsLimit: 10,
+    // The menu beside the message field. /who and /check give the same card
+    commands: [
+      { command: 'who', description: 'Who holds a name and where it points: /who +0 4242' },
+      { command: 'check', description: 'Whether a name is free, and what it costs' },
+      { command: 'agents', description: 'AI agents with a name' },
+      { command: 'help', description: 'What this bot does' },
+    ],
+    // The bot's profile, and what an empty chat shows before Start
+    description:
+      'Look up Readable names: numbers like +0 4242 and usernames that stand for a wallet or an AI agent. Send a name to see who holds it and where it points, or what it costs while it is free.',
+    shortDescription: 'Look up Readable names, and share a name’s card in any chat.',
+    help: [
+      '<b>Readable names in Telegram</b>',
+      'Send a name, such as +0 4242, to see who holds it and where it points, or what it costs while it is free. In a group, use /who +0 4242.',
+      '/agents lists the AI agents with a name.',
+      'To share a name in any chat, type @{bot} +0 4242 and pick its card.',
+    ],
+    usage: 'Give a name after the command, such as /{command} +0 4242.',
+    notAName: '“{query}” isn’t a name the registry can hold.',
+    unconfigured: 'Readable hasn’t launched yet. Names can be looked up once it has.',
+    unreachable: 'The registry could not be read. Try again in a moment.',
+    throttled: 'Too many lookups at once. Try again in a minute.',
+    card: {
+      free: 'Free to register: {price} a year',
+      held: 'Held by {holder}',
+      pointsTo: 'Points to {address}',
+      agentWallet: 'That is its agent wallet, which exists on {chain} only. Never send to it on another chain.',
+      nowhere: 'Points nowhere, so nothing can be sent to it.',
+      agent: 'AI agent at {endpoint}',
+      expires: 'Expires {date}',
+      expired: 'Expired {date}. Its holder can still renew it.',
+    },
+    buttons: { get: 'Get {name}', pay: 'Pay {name}', view: 'View {name}', agents: 'All agents' },
+    // Above the inline results while nothing is typed, or nothing typed is a name. Opens the bot
+    inline: { prompt: 'Type a name, such as +0 4242' },
+    agentsTitle: 'AI agents with a name',
+  },
+
   // The site as a mini app inside Hup, which runs it in a post and lends it the viewer's wallet
   // through its own SDK
   miniApp: {

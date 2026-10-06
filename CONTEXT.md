@@ -925,7 +925,10 @@ as deployed.
   published; `@metamask/snaps-sdk` pinned to 12.0.1, the newest platform production MetaMask
   runs). Tunnel: New chat takes `+0 4242`, the contact keeps `readable: { name, address, at }`
   in its encrypted blob, the card warns when the number points elsewhere, and `?add=+04242`
-  invites work (`lib/readableName.js`, `hooks/useReadablePin.js`). Hup: a profile shows the
+  invites work (`lib/readableName.js`, `hooks/useReadablePin.js`); since 2026-10-06 (the user's
+  request) its chat list ends with a box in Tunnel's violet that links to readable.name to get
+  a number (`ReadablePromo`, copy in its `config/readable.js`, `08deee8`), closed per device;
+  it names no chain, by the user's choice. Hup: a profile shows the
   wallet's primary number (`components/ReadableNumber.jsx`). Both read readable.name's API
   (`NEXT_PUBLIC_READABLE_API`). Both pushed to `main` on 2026-10-05 (Tunnel `36128e0`, Hup
   `2c4f3f5f`). On 2026-10-06 both moved to Robinhood Chain in their copy and link a number's
@@ -938,6 +941,27 @@ as deployed.
   Not proven there: a real X or GitHub proof (the negative path and the signature are), the
   onramp (no testnet), a smart wallet's batch through a live paymaster (the guard is), Tunnel
   and Hup in their own apps (their name parsing and lookup are).
+
+## Telegram bot (2026-10-06)
+
+The user asked how to handle payments by chat (after BluMoney's SMS bot: "send $40 to +1 …",
+"SAVE AS Jordan"), then for a Telegram bot first, in three steps: lookups, paying through a
+Mini App, then contacts and alerts. **Step 1 is built**; 2 and 3 are not.
+
+- `@readablenamebot` (id 8215200460, the user's). Its token is `TELEGRAM_BOT_TOKEN`; the webhook's
+  secret is derived from it (`lib/telegram.js`, `scripts/telegram.mjs`), so there is no second value.
+- `app/api/telegram/route.js` takes Telegram's updates and answers each with one Bot API call in
+  the webhook's reply, so the bot keeps no state and calls nothing itself. GET serves the menu and
+  descriptions (`site.telegram`), which `scripts/telegram.mjs setup <origin>` sets with the webhook.
+- It only reads, never moves money: a name sent in a private chat (or `/who`, `/check` in a group)
+  gets its card, as the search reads it (keypad words too): free with its price and dollars, or
+  held with its holder, the wallet in `<code>`, the agent-wallet warning and its expiry. The one
+  button opens the site: Get (the search), Pay or View (the name's page). `/agents` lists agents.
+  Inline (`@readablenamebot +0 4242`) offers the same cards to share in any chat.
+- Throttled per Telegram account like the relay (`site.telegram.throttle`, in memory).
+- Pay opens the page, where Pay is one more tap: the Mini App with the dialog filled in is step 2.
+- To try it before deploying: `node scripts/telegram.mjs poll https://localhost:3005` reads the
+  updates on this machine and passes them to a dev server; it works only while no webhook is set.
 
 ## State on 2026-10-02
 
@@ -1112,6 +1136,10 @@ as deployed.
 - An idea from the same answer that needs the contract, so it belongs before mainnet: a fair
   launch for short numbers (a commit step or a falling price). `registerFor` from that answer
   is built (2026-10-04).
+- **The Telegram bot, the user's steps (2026-10-06):** set `TELEGRAM_BOT_TOKEN` on the production
+  server and deploy; turn inline mode on in @BotFather (`/setinline`, placeholder `+0 4242`); then
+  `node scripts/telegram.mjs setup https://readable.name`. Add it to `site.integrations` once
+  it answers there. Then steps 2 (Mini App payments) and 3 (contacts, alerts: needs a store).
 
 ## Local end-to-end
 
