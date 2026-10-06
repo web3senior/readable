@@ -930,13 +930,22 @@ as deployed.
   a number (`ReadablePromo`, copy in its `config/readable.js`, `08deee8`), closed per device;
   it names no chain, by the user's choice. Hup: a profile shows the
   wallet's primary number (`components/ReadableNumber.jsx`). Both read readable.name's API
-  (`NEXT_PUBLIC_READABLE_API`). Both pushed to `main` on 2026-10-05 (Tunnel `36128e0`, Hup
-  `2c4f3f5f`). On 2026-10-06 both moved to Robinhood Chain in their copy and link a number's
-  page in the joined form (`/names/+042421230`); neither names the registry, so a new contract
-  reaches them through the API alone. They call the API from the browser, so it must answer on
-  the origin they name without a redirect: on 2026-10-05 `readable.name` sent a 308 to `www`
-  with no CORS header, and every call failed (the user was moving the site to the apex on
-  Vercel).
+  (`NEXT_PUBLIC_READABLE_API`) until 2026-10-06. Both pushed to `main` on 2026-10-05 (Tunnel
+  `36128e0`, Hup `2c4f3f5f`). On 2026-10-06 both moved to Robinhood Chain in their copy and link
+  a number's page in the joined form (`/names/+042421230`).
+  - **Tunnel reads the registry with `readable-sdk` (2026-10-06, the user's request: "remove all
+    of library about resolve, and install readable sdk there").** It calls no API of this site:
+    `lib/readable.js` holds one reader (`getProfile` for New chat and the contact's pin check,
+    `getName` then `resolve` for Settings), `lib/readableName.js` keeps only what looks like a
+    name, the pin and the page link. Settings shows the account's primary name under its name,
+    linked to its page, with "points to another wallet" when it no longer reaches that account
+    (`primaryNameOf` checks the holder and the term, not the target). Its env is
+    `NEXT_PUBLIC_READABLE_URL` (links) and `NEXT_PUBLIC_READABLE_RPC` (optional; Robinhood
+    Chain's public RPC answers any origin). The registry's address comes from the SDK, so a new
+    registry reaches Tunnel with a new SDK release.
+  - Hup still calls the API from the browser, so it must answer on the origin it names without
+    a redirect: on 2026-10-05 `readable.name` sent a 308 to `www` with no CORS header, and every
+    call failed (the user was moving the site to the apex on Vercel).
 - Proven on a fork of Base Sepolia by `tests/e2e/reach.mjs` (30 checks, see Local end-to-end).
   Not proven there: a real X or GitHub proof (the negative path and the signature are), the
   onramp (no testnet), a smart wallet's batch through a live paymaster (the guard is), Tunnel
@@ -1132,7 +1141,7 @@ Mini App, then contacts and alerts. **Step 1 is built**; 2 and 3 are not.
   2026-10-06; 0.2.0 was never published) and `readable-snap`, and ask MetaMask to
   list the Snap. List the mini app on Hup. Set
   `CDP_API_KEY_*` and `PAYMASTER_URL` (with the paymaster's own allowlist: the registry). Deploy
-  Tunnel and Hup with `NEXT_PUBLIC_READABLE_API`.
+  Hup with `NEXT_PUBLIC_READABLE_API`; Tunnel needs no Readable env since it reads through the SDK.
 - An idea from the same answer that needs the contract, so it belongs before mainnet: a fair
   launch for short numbers (a commit step or a falling price). `registerFor` from that answer
   is built (2026-10-04).
