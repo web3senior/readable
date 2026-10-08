@@ -6,7 +6,7 @@ import { readEvents, readPaymentsInside } from '@/lib/events'
 import { displayName, namePath, toNamespace } from '@/lib/namespaces'
 import { publicClient, readRegistry } from '@/lib/registry'
 
-const { limit, cacheSeconds } = site.activity
+const { cacheSeconds } = site.activity
 
 // What a name went through, in the order that wins when one transaction did several things to it:
 // a registration also mints, and a transfer also re-points the name and drops a primary name
@@ -75,22 +75,22 @@ async function paidFor(event, transaction, events, paymentsInside) {
 }
 
 /** The kind of an entry as `site.activity.kinds` names it, the wallet it shows and what was paid. */
-async function describe(event, transaction, holder, paid) {
+async function describe(event, transaction, paid) {
   switch (event.eventName) {
     case 'NameRegistered':
       if (isGrant(transaction)) return { kind: 'granted', wallet: event.owner, paid: null }
       return { kind: 'bought', wallet: event.owner, paid: await paid() }
     case 'NameRenewed':
-      return { kind: 'renewed', wallet: senderOf(transaction) ?? (await holder()), paid: await paid() }
+      return { kind: 'renewed', wallet: senderOf(transaction), paid: await paid() }
     case 'Transfer':
-      return { kind: 'transferred', wallet: event.to, paid: null }
+      return { kind: 'transferred', wallet: event.to, from: event.from, paid: null }
     case 'PrimaryNameChanged':
       return { kind: 'primary', wallet: event.account, paid: null }
     case 'EditorChanged':
-      return { kind: isAddressEqual(event.editor, zeroAddress) ? 'editorRemoved' : 'editor', wallet: senderOf(transaction) ?? (await holder()), paid: null }
+      return { kind: isAddressEqual(event.editor, zeroAddress) ? 'editorRemoved' : 'editor', wallet: senderOf(transaction), paid: null }
     default: {
       const kind = { TargetChanged: 'target', TextChanged: 'records', AddressChanged: 'addresses' }[event.eventName]
-      return { kind, wallet: senderOf(transaction) ?? (await holder()), paid: null }
+      return { kind, wallet: senderOf(transaction), paid: null }
     }
   }
 }
@@ -98,9 +98,8 @@ async function describe(event, transaction, holder, paid) {
 const read = (functionName, args) => publicClient().readContract({ address: registry.address, abi: registry.abi, functionName, args })
 
 async function loadActivity() {
-  const [events, { namespaces, currency }] = await Promise.all([readEvents(EVENTS), readRegistry()])
-  const grouped = group(events)
-  const entries = grouped.slice(0, limit)
+  const [events, { namespaces, currency }] = await Promise.all([readEvents(EVENTS, { all: true }), readRegistry()])
+  const entries = group(events)
 
   // One reading of each transaction and each name, however many entries share it
   const once = (cache, key, load) => cache.get(key) ?? cache.set(key, load()).get(key)
@@ -120,17 +119,17 @@ async function loadActivity() {
       const source = namespaces.find((namespace) => namespace.id === record.namespaceId)
       if (!source) return null
       const namespace = toNamespace(source, { chainId: registry.chainId })
-      // The holder now, for a change whose sender can't be read: almost always the one who made it
-      const holder = () => read('ownerOf', [event.tokenId])
       const paid = () => paidFor(event, transaction, events, () => once(insides, event.hash, () => readPaymentsInside(event.hash)))
-      const { kind, wallet, paid: amount } = await describe(event, transaction, holder, paid)
+      const { kind, wallet, from, paid: amount } = await describe(event, transaction, paid)
       const at = event.at ?? Number((await once(blocks, event.block, () => publicClient().getBlock({ blockNumber: event.block }))).timestamp) * 1000
       return {
         id: `${event.hash}:${event.tokenId}`,
+        tokenId: String(event.tokenId),
         kind,
         name: displayName(namespace, record.label),
         path: namePath(namespace, record.label),
-        wallet: getAddress(wallet),
+        wallet: wallet ? getAddress(wallet) : null,
+        from: from ? getAddress(from) : null,
         paid: amount === null ? null : String(amount),
         hash: event.hash,
         at,
@@ -138,7 +137,8 @@ async function loadActivity() {
     })
   )
 
-  return { rows: rows.filter(Boolean), total: grouped.length, currency: { symbol: currency.symbol, decimals: currency.decimals } }
+  const visible = rows.filter(Boolean)
+  return { rows: visible, total: visible.length, currency: { symbol: currency.symbol, decimals: currency.decimals } }
 }
 
 let kept = null

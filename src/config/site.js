@@ -649,10 +649,20 @@ export const site = {
   activity: {
     title: 'Latest activity',
     path: '/api/activity',
-    limit: 20,
-    // Beside the title: that the table is only the newest, and of how many once there are more
-    shown: { all: 'The last {shown}', more: 'The last {shown} of {total}' },
-    columns: { name: 'Name', kind: 'Activity', wallet: 'Wallet', paid: 'Paid', at: 'When' },
+    pageSize: 20,
+    // Beside the title: every activity record, ordered newest first
+    shown: '{shown} of {total} activities across {names} names',
+    loadMore: 'Load more activity',
+    loadingMore: 'Loading more activity',
+    retryMore: 'Could not load more. Try again',
+    explanation: 'One name can appear more than once. Wallets show who was involved at the time; fees exclude network gas.',
+    roles: { from: 'From', to: 'To', registered: 'Registered to', granted: 'Granted to', by: 'By' },
+    unknownWallet: 'Unknown',
+    noFee: 'No fee',
+    unknownFee: 'Unavailable',
+    ago: '{time} ago',
+    transaction: 'View transaction for {name}',
+    columns: { name: 'Name', kind: 'Activity', wallet: 'Wallets involved', paid: 'Registry fee', at: 'When' },
     // One per kind. The wallet is the new holder of a name bought, granted or transferred, and
     // otherwise the one who made the change
     kinds: {
@@ -773,6 +783,25 @@ export const site = {
     heading: 'Registry admin',
     intro: 'Namespaces, prices, reservations and registry settings. Every change is a transaction from the owner wallet.',
     kinds: { name: 'Extension', number: 'Numbers' },
+    contractPause: {
+      status: 'Status',
+      live: 'Live',
+      paused: 'Paused',
+      pause: {
+        label: 'Pause contract',
+        title: 'Pause the contract',
+        description: 'Stops new registrations across every namespace until resumed. Existing names keep resolving and can still be renewed. Owner grants remain available.',
+        pending: 'Pausing the registry',
+        done: 'Registry paused',
+      },
+      resume: {
+        label: 'Resume contract',
+        title: 'Resume the contract',
+        description: 'New registrations open again in namespaces that are not individually paused.',
+        pending: 'Resuming the registry',
+        done: 'Registry resumed',
+      },
+    },
     // The labels a namespace holds reserved, listed on its card, shortest first. The first
     // `shown` are listed and the rest folded behind `more`
     reserved: {

@@ -61,7 +61,7 @@ export default async function HomePage({ searchParams }) {
           </p>
         </div>
         <SearchExperience initialQuery={initialQuery} />
-        {/* <LatestActivity className={styles.page__activity} /> */}
+        <LatestActivity className={styles.page__activity} />
         <HowItWorks className={styles.page__how} />
       </div>
     </main>

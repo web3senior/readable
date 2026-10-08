@@ -103,12 +103,12 @@ await dialog().getByRole('button', { name: 'Grant' }).click()
 await toast(`${LONG_NUMBER} granted`)
 
 // Pause and resume the registry, then change the grace period
-await row('Status').getByRole('button', { name: 'Pause' }).click()
-await dialog().getByRole('button', { name: 'Pause' }).click()
+await row('Status').getByRole('button', { name: 'Pause contract', exact: true }).click()
+await dialog().getByRole('button', { name: 'Pause contract', exact: true }).click()
 await toast('Registry paused')
 await row('Status').getByText('Paused').waitFor({ timeout: 30000 })
-await row('Status').getByRole('button', { name: 'Resume' }).click()
-await dialog().getByRole('button', { name: 'Resume' }).click()
+await row('Status').getByRole('button', { name: 'Resume contract', exact: true }).click()
+await dialog().getByRole('button', { name: 'Resume contract', exact: true }).click()
 await toast('Registry resumed')
 await row('Status').getByText('Live').waitFor({ timeout: 30000 })
 

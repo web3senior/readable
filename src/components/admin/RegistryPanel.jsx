@@ -18,6 +18,7 @@ import {
 } from '@/components/admin/specs'
 import { chainNameFor, explorerFor } from '@/config/chains'
 import { registry } from '@/config/registry'
+import { site } from '@/config/site'
 import { formatBalance, formatDays, truncateAddress } from '@/lib/format'
 import styles from './RegistryPanel.module.scss'
 
@@ -59,9 +60,9 @@ export default function RegistryPanel({ data, canAct, onAction, context }) {
         ]
       : []),
     {
-      term: 'Status',
-      value: <Badge tone={data.paused ? 'warning' : 'success'}>{data.paused ? 'Paused' : 'Live'}</Badge>,
-      action: { label: data.paused ? 'Resume' : 'Pause', spec: registryPauseSpec },
+      term: site.admin.contractPause.status,
+      value: <Badge tone={data.paused ? 'warning' : 'success'}>{data.paused ? site.admin.contractPause.paused : site.admin.contractPause.live}</Badge>,
+      action: { label: site.admin.contractPause[data.paused ? 'resume' : 'pause'].label, spec: registryPauseSpec },
     },
     { term: 'Payment', value: currency.symbol },
     { term: 'Balance', value: formatBalance(data.balance, currency), action: { label: 'Withdraw', spec: withdrawSpec } },

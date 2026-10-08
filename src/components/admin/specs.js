@@ -145,22 +145,23 @@ const displayName = (kind, name) => (kind === KIND.NAME ? `.${name}` : kind === 
 
 // --- REGISTRY ---
 
-export const registryPauseSpec = ({ data, perform }) => ({
-  title: data.paused ? 'Resume the registry' : 'Pause the registry',
-  description: data.paused
-    ? 'Registrations and renewals open again.'
-    : 'Stops every registration and renewal until resumed. Names keep resolving.',
-  fields: [],
-  submitLabel: data.paused ? 'Resume' : 'Pause',
-  tone: data.paused ? undefined : 'danger',
-  submit: () =>
-    perform({
-      functionName: data.paused ? 'unpause' : 'pause',
-      args: [],
-      pending: data.paused ? 'Resuming the registry' : 'Pausing the registry',
-      done: data.paused ? 'Registry resumed' : 'Registry paused',
-    }),
-})
+export const registryPauseSpec = ({ data, perform }) => {
+  const copy = site.admin.contractPause[data.paused ? 'resume' : 'pause']
+  return {
+    title: copy.title,
+    description: copy.description,
+    fields: [],
+    submitLabel: copy.label,
+    tone: data.paused ? undefined : 'danger',
+    submit: () =>
+      perform({
+        functionName: data.paused ? 'unpause' : 'pause',
+        args: [],
+        pending: copy.pending,
+        done: copy.done,
+      }),
+  }
+}
 
 export const gracePeriodSpec = ({ data, perform }) => ({
   title: 'Grace period',

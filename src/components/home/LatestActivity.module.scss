@@ -2,8 +2,7 @@
 
 .activity {
   width: 100%;
-  // As wide as the search above it
-  max-width: 44rem;
+  max-width: 56rem;
   margin: 0 auto;
 
   &__frame {
@@ -14,8 +13,7 @@
     box-shadow: var(--shadow-sm);
   }
 
-  // Never wider than the page: on a phone the wallet and the price step out instead. About ten
-  // rows tall, the next one cut, so it shows that it scrolls
+  // Keep both sides of a transfer available on phones through horizontal scrolling.
   &__scroll {
     overflow: auto;
     max-height: min(35rem, 70vh);
@@ -26,6 +24,13 @@
     border-collapse: collapse;
     font-size: var(--text-sm);
     font-variant-numeric: tabular-nums;
+  }
+
+  &__more {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-3);
+    border-top: 1px solid var(--color-border);
   }
 
   // Above the table: its title, and how many of the registry's changes it shows
@@ -46,6 +51,13 @@
   &__count {
     font-size: var(--text-sm);
     color: var(--color-text-muted);
+  }
+
+  &__explanation {
+    flex-basis: 100%;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    line-height: 1.5;
   }
 
   // The column headings stay at the top while the rows scroll. A collapsed border would scroll
@@ -94,15 +106,6 @@
       text-align: right;
     }
 
-    &--wallet,
-    &--paid {
-      display: none;
-
-      @include from('sm') {
-        display: table-cell;
-      }
-    }
-
     &--paid {
       font-weight: var(--weight-semibold);
     }
@@ -148,6 +151,17 @@
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--color-text-muted);
+  }
+
+  &__wallets {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__role {
+    font-family: var(--font-sans);
+    color: var(--color-text-subtle);
   }
 
   &__link {

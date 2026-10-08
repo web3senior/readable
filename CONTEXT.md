@@ -979,7 +979,10 @@ as deployed.
     `getName` then `resolve` for Settings), `lib/readableName.js` keeps only what looks like a
     name, the pin and the page link. Settings shows the account's primary name under its name,
     linked to its page, with "points to another wallet" when it no longer reaches that account
-    (`primaryNameOf` checks the holder and the term, not the target). Its env is
+    (`primaryNameOf` checks the holder and the term, not the target). The contact card shows
+    the contact's own primary number too (2026-10-06, the user's request), beside the number
+    they were added by and once when they are the same, but only while it points to them: a
+    number pointed elsewhere would send people to another wallet. Its env is
     `NEXT_PUBLIC_READABLE_URL` (links) and `NEXT_PUBLIC_READABLE_RPC` (optional; Robinhood
     Chain's public RPC answers any origin). The registry's address comes from the SDK, so a new
     registry reaches Tunnel with a new SDK release.
